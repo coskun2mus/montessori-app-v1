@@ -1,3 +1,21 @@
+
+const Lesson = require('./models/Lesson'); // Dosyanın başına ekle
+
+// --- MATERYAL EKLEME TESTİ ---
+app.get('/materyal-kur', async (req, res) => {
+  try {
+    const dersler = [
+      { area: 'Duyusal', lessonName: 'Pembe Kule', difficultyLevel: 3 },
+      { area: 'Matematik', lessonName: 'Sayı Kartları', difficultyLevel: 5 },
+      { area: 'Günlük Yaşam', lessonName: 'Kaşıklama', difficultyLevel: 2 }
+    ];
+    
+    await Lesson.insertMany(dersler);
+    res.send("<h1>✅ Materyaller Başarıyla Kuruldu!</h1><p>Pembe Kule, Sayı Kartları ve Kaşıklama eklendi.</p>");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
