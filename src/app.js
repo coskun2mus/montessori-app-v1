@@ -84,14 +84,24 @@ app.get('/api/students/:classId', async (req, res) => {
 // Yeni Öğrenci Ekle (Mükerrer kontrolü model seviyesinde yapıldı, burada yakalıyoruz)
 app.post('/api/students', async (req, res) => {
     try {
-        const newStudent = await Student.create(req.body);
-        res.json(newStudent);
-    } catch (err) {
-        // MongoDB unique index hatasını yakala (code 11000)
-        if (err.code === 11000) {
-            return res.status(400).json({ error: "Bu öğrenci bu sınıfa zaten kayıtlı!" });
+        const { firstName, lastName, birthDate } = req.body;
+
+        // Manuel kontrol: Aynı isim, soyisim ve doğum günü var mı?
+        const existingStudent = await Student.findOne({ 
+            firstName: firstName.trim(), 
+            lastName: lastName.trim(), 
+            birthDate: new Date(birthDate) 
+        });
+
+        if (existingStudent) {
+            return res.status(400).json({ error: "Bu öğrenci sistemde zaten kayıtlı!" });
         }
-        res.status(500).json({ error: "Öğrenci kaydı sırasında bir hata oluştu." });
+
+        const newStudent = await Student.create(req.body);
+        res.status(201).json(newStudent);
+    } catch (err) {
+        console.error("Kayıt hatası:", err);
+        res.status(500).json({ error: "Kaydedilirken bir hata oluştu." });
     }
 });
 

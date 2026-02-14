@@ -48,7 +48,7 @@ const studentSchema = new mongoose.Schema({
 });
 
 // Aynı sınıfa aynı isim-soyisimle mükerrer kaydı engeller
-studentSchema.index({ firstName: 1, lastName: 1, currentClass: 1 }, { unique: true });
+studentSchema.index({ firstName: 1, lastName: 1, birthDate: 1 }, { unique: true });
 
 // Yaş hesaplama (Virtual)
 studentSchema.virtual('ageInMonths').get(function() {

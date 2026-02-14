@@ -1,0 +1,68 @@
+/* views/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+
+body { 
+    background-color: #fdfaf5; 
+    font-family: 'Nunito', sans-serif; 
+    padding-bottom: 80px; 
+    color: #4a5d4e;
+}
+
+/* Kart Modernizasyonu */
+.admin-card, .student-card {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    background: white;
+    transition: transform 0.2s ease;
+}
+
+.student-card:active {
+    transform: scale(0.96);
+}
+
+/* Tarih Seçici (Date Picker) Modernizasyonu */
+input[type="date"] {
+    position: relative;
+    padding: 12px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+}
+
+/* Tarih seçicinin o sıkıcı ikonunu gizleyip tüm alanı tıklanabilir yapıyoruz */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+}
+
+/* Butonlar */
+.btn-lg {
+    border-radius: 12px;
+    padding: 15px;
+    font-weight: bold;
+    border: none;
+}
+
+/* Alt Menü */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+    z-index: 1000;
+}

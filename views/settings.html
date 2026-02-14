@@ -7,15 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { background-color: #fdfaf5; font-family: 'Nunito', sans-serif; padding: 15px; padding-bottom: 50px; }
-        .admin-card { border-radius: 20px; border: none; box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 10px; }
-        .form-control-lg, .form-select-lg { border-radius: 12px; font-size: 1rem; border: 1px solid #e0e0e0; }
-        .btn-lg { border-radius: 12px; padding: 15px; font-weight: bold; transition: all 0.2s; }
-        .btn-lg:active { transform: scale(0.98); }
-        h2 { color: #4a5d4e; font-weight: 800; margin-bottom: 5px; }
-        label { font-size: 0.85rem; font-weight: 700; color: #666; margin-left: 5px; margin-top: 10px; display: block; }
-    </style>
+   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
@@ -39,14 +31,15 @@
                         <label>Soyad</label>
                         <input type="text" id="stuLastName" class="form-control form-control-lg" placeholder="Örn: Coşkun">
                     </div>
-                    <div class="col-12 col-md-6">
-                        <label>Doğum Tarihi</label>
-                        <input type="date" id="stuBirthDate" class="form-control form-control-lg">
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label>Okula Başlama Tarihi</label>
-                        <input type="date" id="stuEnrollDate" class="form-control form-control-lg">
-                    </div>
+   <div class="col-12 col-md-6">
+    <label>Doğum Tarihi</label>
+    <input type="date" id="stuBirthDate" class="form-control form-control-lg" onkeydown="return false">
+</div>
+
+<div class="col-12 col-md-6">
+    <label>Okula Başlama Tarihi</label>
+    <input type="date" id="stuEnrollDate" class="form-control form-control-lg" onkeydown="return false">
+</div>
                     <div class="col-12">
                         <label>Atanacağı Sınıf</label>
                         <select id="stuClass" class="form-select form-select-lg">
@@ -176,6 +169,32 @@
             alert("Hata: " + (result.error || "Materyal eklenemedi."));
         }
     }
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. TARİH SINIRLARINI AYARLA
+    const today = new Date().toISOString().split('T')[0];
+    
+    const birthInput = document.getElementById('stuBirthDate');
+    const enrollInput = document.getElementById('stuEnrollDate');
+    
+    if(birthInput) {
+        birthInput.setAttribute('max', today);
+        // 20 yıl öncesi sınırı
+        const minDate = new Date();
+        minDate.setFullYear(minDate.getFullYear() - 20);
+        birthInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+    }
+    
+    if(enrollInput) {
+        enrollInput.setAttribute('max', today);
+    }
+
+    // 2. SINIFLARI YÜKLE (Mevcut fonksiyonun)
+    loadClassesToSelect();
+});
+
+// loadClassesToSelect ve diğer fonksiyonların aşağıda aynen kalsın...    
+
 </script>
 </body>
 </html>
