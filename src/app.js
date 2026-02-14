@@ -95,6 +95,37 @@ app.post('/api/students', async (req, res) => {
     }
 });
 
+// Tüm Materyalleri Getir (Modal içindeki liste için)
+app.get('/api/lessons', async (req, res) => {
+    try {
+        const lessons = await Lesson.find().sort({ area: 1, lessonName: 1 });
+        res.json(lessons);
+    } catch (err) {
+        res.status(500).json({ error: "Materyaller getirilemedi" });
+    }
+});
+
+// Yeni Gözlem Kaydı Oluştur
+app.post('/api/observations', async (req, res) => {
+    try {
+        // Gelen veriyi kontrol etmek için log (hata ayıklarken hayat kurtarır)
+        console.log("Yeni Gözlem Talebi:", req.body);
+
+        // Veritabanına kayıt
+        const newObservation = await Observation.create(req.body);
+        
+        // Başarılı sonucu dön
+        res.status(201).json(newObservation);
+    } catch (err) {
+        console.error("Gözlem Kayıt Hatası:", err);
+        
+        // Eğer modeldeki 'required' alanlar eksikse burası tetiklenir
+        res.status(400).json({ 
+            error: "Gözlem kaydedilemedi. Lütfen tüm zorunlu alanları (Öğrenci, Materyal, Durum, Öğretmen) kontrol edin.",
+            details: err.message 
+        });
+    }
+});
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log(`🚀 Sunucu v1.1.0 hazır! Port: ${port}`);

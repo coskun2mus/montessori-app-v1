@@ -156,12 +156,38 @@ async function openObservation(id, name) {
 // Şimdilik sadece konsola basar, bir sonraki adımda kaydedeceğiz
 async function saveQuickObservation(status) {
     const lessonId = document.getElementById('lessonList').value;
-    const note = document.getElementById('obsNote').value;
+    const noteContent = document.getElementById('obsNote').value; // Formdan gelen not
     
-    if(!lessonId) return alert("Lütfen bir çalışma seçin!");
+    if(!lessonId) return alert("Lütfen önce bir çalışma seçin!");
 
-    console.log("Kaydediliyor:", { activeStudentId, lessonId, status, note });
-    alert("Gözlem şimdilik konsola yazıldı, bir sonraki adımda kaydedeceğiz!");
+    const data = {
+        student: activeStudentId,
+        lesson: lessonId,
+        status: status, // 'Sunuldu', 'Çalışıyor' vb.
+        teacherName: "Admin Öğretmen", // Modelindeki teacherName alanı
+        note: noteContent, // Modelindeki note alanı
+        observationDate: new Date() // Okul sahibinin istediği tarih damgası
+    };
+
+    try {
+        const res = await fetch('/api/observations', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if(res.ok) {
+            alert("Gözlem başarıyla kaydedildi! ✨");
+            // Modalı kapat ve temizle
+            bootstrap.Modal.getInstance(document.getElementById('observationModal')).hide();
+            document.getElementById('obsNote').value = '';
+        } else {
+            const errData = await res.json();
+            alert("Hata: " + errData.error);
+        }
+    } catch (err) {
+        console.error("Kayıt hatası:", err);
+    }
 }
 </script>
 
