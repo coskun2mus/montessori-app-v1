@@ -15,40 +15,48 @@ const studentSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'Doğum tarihi başarı analizi için kritiktir.']
     },
+    // Okula Başlama Tarihi (Senin özel isteğin)
     enrollmentDate: {
         type: Date,
-        default: Date.now // Okula başladığı tarih
+        default: Date.now 
     },
     gender: {
         type: String,
-        enum: ['Kız', 'Erkek', 'Diğer']
+        enum: ['Kız', 'Erkek', 'Diğer'],
+        required: false // Opsiyonel
     },
-    // Sınıf Bağlantısı (İlişkisel yapı)
     currentClass: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Class', // Class modeline referans veriyoruz
+        ref: 'Class', 
         required: [true, 'Öğrenci mutlaka bir sınıfa atanmalıdır.']
     },
-    montessoriExperience: {
-        type: Boolean,
-        default: false // Öncesinde Montessori eğitimi almış mı?
+    // Opsiyonel Not Alanı (Senin özel isteğin)
+    notes: {
+        type: String,
+        trim: true,
+        default: "" // Boş bırakılabilir
     },
     status: {
         type: String,
         enum: ['Aktif', 'Mezun', 'Ayrıldı'],
         default: 'Aktif'
-    },
-    notes: {
-        type: String,
-        trim: true
     }
-}, { timestamps: true });
+}, { 
+    timestamps: true,
+    toJSON: { virtuals: true }, 
+    toObject: { virtuals: true } 
+});
 
-// Sanal Alan: Çocuğun anlık yaşını hesaplar (Veritabanına kaydetmez, çağırdığında hesaplar)
+// Aynı sınıfa aynı isim-soyisimle mükerrer kaydı engeller
+studentSchema.index({ firstName: 1, lastName: 1, currentClass: 1 }, { unique: true });
+
+// Yaş hesaplama (Virtual)
 studentSchema.virtual('ageInMonths').get(function() {
+    if (!this.birthDate) return null;
     const now = new Date();
-    const diff = now.getTime() - this.birthDate.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24 * 30.44)); // Ay cinsinden yaş
+    const birth = new Date(this.birthDate);
+    const months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+    return months >= 0 ? months : 0;
 });
 
 module.exports = mongoose.model('Student', studentSchema);

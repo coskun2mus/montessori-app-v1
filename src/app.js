@@ -6,11 +6,8 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// ÖNEMLİ: Klasör yollarını tanımlıyoruz
-// app.js src içinde olduğu için, bir üst klasöre (..) çıkıp views'a bakıyoruz
+// Klasör yolları
 const viewsPath = path.join(__dirname, '..', 'views');
-
-// Statik dosyaları (CSS, JS) sunmak için
 app.use(express.static(viewsPath));
 
 // Modeller
@@ -26,49 +23,55 @@ mongoose.connect(process.env.MONGO_URI)
 
 // --- SAYFA ROTALARI ---
 
-// Ana Sayfa (Öğretmen Paneli)
 app.get('/', (req, res) => {
     res.sendFile(path.join(viewsPath, 'index.html'));
 });
 
-// Ayarlar Sayfası (Okul Sahibi Paneli)
 app.get('/ayarlar', (req, res) => {
     res.sendFile(path.join(viewsPath, 'settings.html'));
 });
 
-// --- API ROTALARI (Veri İşlemleri) ---
+// --- API ROTALARI ---
 
-// Sınıfları Getir
+// 1. SINIFLAR
 app.get('/api/classes', async (req, res) => {
     try {
-        const classes = await Class.find();
+        const classes = await Class.find().sort({ className: 1 });
         res.json(classes);
     } catch (err) {
         res.status(500).json({ error: "Sınıflar getirilemedi" });
     }
 });
 
-// Sınıf Ekle
 app.post('/api/classes', async (req, res) => {
     try {
+        // Mükerrer Kayıt Kontrolü
+        const exists = await Class.findOne({ className: req.body.className });
+        if (exists) return res.status(400).json({ error: "Bu isimde bir sınıf zaten var!" });
+
         const newClass = await Class.create(req.body);
         res.json(newClass);
     } catch (err) {
-        res.status(500).json({ error: "Sınıf eklenemedi" });
+        res.status(500).json({ error: "Sınıf eklenirken bir hata oluştu." });
     }
 });
 
-// Materyal (Lesson) Ekle
+// 2. MATERYALLER (LESSONS)
 app.post('/api/lessons', async (req, res) => {
     try {
+        // Mükerrer Kayıt Kontrolü
+        const exists = await Lesson.findOne({ lessonName: req.body.lessonName });
+        if (exists) return res.status(400).json({ error: "Bu materyal zaten müfredatta var!" });
+
         const newLesson = await Lesson.create(req.body);
         res.json(newLesson);
     } catch (err) {
-        res.status(500).json({ error: "Materyal eklenemedi" });
+        res.status(500).json({ error: "Materyal eklenemedi." });
     }
 });
 
-// Öğrencileri Sınıfa Göre Getir
+// 3. ÖĞRENCİLER
+// Sınıfa göre öğrencileri listele (Yaş hesabı Virtual alanla otomatik gelecek)
 app.get('/api/students/:classId', async (req, res) => {
     try {
         const students = await Student.find({ currentClass: req.params.classId });
@@ -78,18 +81,21 @@ app.get('/api/students/:classId', async (req, res) => {
     }
 });
 
-const port = process.env.PORT || 8080;
-app.listen(port, () => {
-    console.log(`🚀 Sunucu v1.0.3 - Port: ${port}`);
-    console.log(`📂 Views Klasörü: ${viewsPath}`);
-});
-
-// Yeni Öğrenci Ekle
+// Yeni Öğrenci Ekle (Mükerrer kontrolü model seviyesinde yapıldı, burada yakalıyoruz)
 app.post('/api/students', async (req, res) => {
     try {
         const newStudent = await Student.create(req.body);
         res.json(newStudent);
     } catch (err) {
-        res.status(500).json({ error: "Öğrenci eklenemedi" });
+        // MongoDB unique index hatasını yakala (code 11000)
+        if (err.code === 11000) {
+            return res.status(400).json({ error: "Bu öğrenci bu sınıfa zaten kayıtlı!" });
+        }
+        res.status(500).json({ error: "Öğrenci kaydı sırasında bir hata oluştu." });
     }
+});
+
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+    console.log(`🚀 Sunucu v1.1.0 hazır! Port: ${port}`);
 });

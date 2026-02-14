@@ -14,7 +14,7 @@
         .btn-lg { border-radius: 12px; padding: 15px; font-weight: bold; transition: all 0.2s; }
         .btn-lg:active { transform: scale(0.98); }
         h2 { color: #4a5d4e; font-weight: 800; margin-bottom: 5px; }
-        label { font-size: 0.85rem; font-weight: 700; color: #666; margin-left: 5px; }
+        label { font-size: 0.85rem; font-weight: 700; color: #666; margin-left: 5px; margin-top: 10px; display: block; }
     </style>
 </head>
 <body>
@@ -32,20 +32,30 @@
                 <h5 class="mb-4 text-warning fw-bold"><i class="fas fa-user-plus me-2"></i>Öğrenci Kaydet</h5>
                 <div class="row g-2">
                     <div class="col-6">
-                        <input type="text" id="stuFirstName" class="form-control form-control-lg" placeholder="Ad">
+                        <label>Ad</label>
+                        <input type="text" id="stuFirstName" class="form-control form-control-lg" placeholder="Örn: Mustafa">
                     </div>
                     <div class="col-6">
-                        <input type="text" id="stuLastName" class="form-control form-control-lg" placeholder="Soyad">
+                        <label>Soyad</label>
+                        <input type="text" id="stuLastName" class="form-control form-control-lg" placeholder="Örn: Coşkun">
                     </div>
-                    <div class="col-12">
-                        <label>Öğrenci Yaşı (Ay)</label>
-                        <input type="number" id="stuAge" class="form-control form-control-lg" placeholder="Örn: 48">
+                    <div class="col-12 col-md-6">
+                        <label>Doğum Tarihi</label>
+                        <input type="date" id="stuBirthDate" class="form-control form-control-lg">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label>Okula Başlama Tarihi</label>
+                        <input type="date" id="stuEnrollDate" class="form-control form-control-lg">
                     </div>
                     <div class="col-12">
                         <label>Atanacağı Sınıf</label>
                         <select id="stuClass" class="form-select form-select-lg">
                             <option selected disabled>Sınıf Seçin...</option>
-                            </select>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label>Özel Not (Opsiyonel)</label>
+                        <textarea id="stuNotes" class="form-control form-control-lg" rows="2" placeholder="Öğrenci hakkında kısa not..."></textarea>
                     </div>
                 </div>
                 <button onclick="saveStudent()" class="btn btn-warning btn-lg w-100 shadow mt-4 text-white">Öğrenciyi Kaydet</button>
@@ -55,8 +65,8 @@
         <div class="col-12">
             <div class="card admin-card p-4 border-start border-success border-5">
                 <h5 class="mb-3 text-success fw-bold"><i class="fas fa-door-open me-2"></i>Sınıf Tanımla</h5>
-                <input type="text" id="className" class="form-control form-control-lg mb-2" placeholder="Sınıf Adı">
-                <input type="text" id="teacherName" class="form-control form-control-lg mb-3" placeholder="Öğretmen">
+                <input type="text" id="className" class="form-control form-control-lg mb-2" placeholder="Sınıf Adı (Örn: Arılar)">
+                <input type="text" id="teacherName" class="form-control form-control-lg mb-3" placeholder="Sorumlu Öğretmen">
                 <button onclick="saveClass()" class="btn btn-success btn-lg w-100 shadow">Sınıfı Kaydet</button>
             </div>
         </div>
@@ -71,7 +81,7 @@
                     <option>Dil</option>
                     <option>Kültür</option>
                 </select>
-                <input type="text" id="lessonName" class="form-control form-control-lg mb-3" placeholder="Materyal Adı">
+                <input type="text" id="lessonName" class="form-control form-control-lg mb-3" placeholder="Materyal Adı (Örn: Pembe Kule)">
                 <div class="mb-2">
                     <label>Zorluk (1-10)</label>
                     <input type="range" id="difficulty" class="form-range" min="1" max="10">
@@ -83,7 +93,6 @@
 </div>
 
 <script>
-    // Sayfa açıldığında sınıfları yükle
     document.addEventListener('DOMContentLoaded', loadClassesToSelect);
 
     async function loadClassesToSelect() {
@@ -91,7 +100,6 @@
             const res = await fetch('/api/classes');
             const classes = await res.json();
             const select = document.getElementById('stuClass');
-            
             classes.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c._id;
@@ -105,32 +113,68 @@
         const data = {
             firstName: document.getElementById('stuFirstName').value,
             lastName: document.getElementById('stuLastName').value,
-            ageInMonths: document.getElementById('stuAge').value,
-            currentClass: document.getElementById('stuClass').value
+            birthDate: document.getElementById('stuBirthDate').value,
+            enrollmentDate: document.getElementById('stuEnrollDate').value || undefined,
+            currentClass: document.getElementById('stuClass').value,
+            notes: document.getElementById('stuNotes').value
         };
-        if(!data.currentClass) return alert("Lütfen bir sınıf seçin!");
+
+        if(!data.firstName || !data.lastName || !data.birthDate || !data.currentClass) {
+            return alert("Lütfen zorunlu alanları (Ad, Soyad, Doğum Tarihi, Sınıf) doldurun!");
+        }
 
         const res = await fetch('/api/students', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
+        
+        const result = await res.json();
         if(res.ok) {
-            alert("Öğrenci Kaydedildi!");
+            alert("Öğrenci Başarıyla Kaydedildi!");
             location.reload();
+        } else {
+            alert("Hata: " + (result.error || "Öğrenci kaydedilemedi."));
         }
     }
 
     async function saveClass() {
-        const data = { className: document.getElementById('className').value, teacherName: document.getElementById('teacherName').value };
-        const res = await fetch('/api/classes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        if(res.ok) { alert("Sınıf Kaydedildi!"); location.reload(); }
+        const data = { 
+            className: document.getElementById('className').value, 
+            teacherName: document.getElementById('teacherName').value 
+        };
+        const res = await fetch('/api/classes', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        });
+        const result = await res.json();
+        if(res.ok) { 
+            alert("Sınıf Kaydedildi!"); 
+            location.reload(); 
+        } else {
+            alert("Hata: " + (result.error || "Sınıf kaydedilemedi."));
+        }
     }
 
     async function saveLesson() {
-        const data = { area: document.getElementById('lessonArea').value, lessonName: document.getElementById('lessonName').value, difficultyLevel: document.getElementById('difficulty').value };
-        const res = await fetch('/api/lessons', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        if(res.ok) alert("Materyal Eklendi!");
+        const data = { 
+            area: document.getElementById('lessonArea').value, 
+            lessonName: document.getElementById('lessonName').value, 
+            difficultyLevel: document.getElementById('difficulty').value 
+        };
+        const res = await fetch('/api/lessons', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        });
+        const result = await res.json();
+        if(res.ok) {
+            alert("Materyal Eklendi!");
+            location.reload();
+        } else {
+            alert("Hata: " + (result.error || "Materyal eklenemedi."));
+        }
     }
 </script>
 </body>

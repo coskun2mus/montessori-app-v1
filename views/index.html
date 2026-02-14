@@ -13,13 +13,13 @@
         .student-card { border: 1px solid #e9e0d2; border-radius: 15px; background: white; transition: all 0.2s; cursor: pointer; }
         .student-card:active { transform: scale(0.95); background: #f0f0f0; }
         
-        /* Alt Menü */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); z-index: 1000; }
         .nav-item-mobile { text-align: center; color: #888; text-decoration: none; font-size: 0.8rem; }
         .nav-item-mobile.active { color: #4a5d4e; font-weight: bold; }
         .nav-item-mobile i { font-size: 1.2rem; display: block; margin-bottom: 2px; }
         
-        .avatar { background: #e9e0d2; color: #4a5d4e; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
+        .avatar { background: #e9e0d2; color: #4a5d4e; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; text-transform: uppercase; }
+        .btn-status { padding: 15px; font-weight: bold; border-radius: 12px; margin-bottom: 10px; width: 100%; text-align: left; }
     </style>
 </head>
 <body>
@@ -31,8 +31,7 @@
             <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="classSelectBtn" data-bs-toggle="dropdown" aria-expanded="false">
                 Sınıf Seçin
             </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="classList" style="border-radius: 12px;">
-                </ul>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="classList" style="border-radius: 12px;"></ul>
         </div>
     </div>
 </div>
@@ -61,8 +60,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="modalBodyContent">
-                <p class="text-muted small">Bu öğrenci için gözlem kaydı oluşturun.</p>
+                <select class="form-select mb-3" id="lessonList" style="border-radius: 12px; padding: 12px;">
+                    <option selected disabled>Çalışma Seçin...</option>
+                </select>
+                
+                <div class="status-buttons">
+                    <button class="btn btn-outline-info btn-status" onclick="saveQuickObservation('Sunuldu')">1. Sunuldu</button>
+                    <button class="btn btn-outline-warning btn-status" onclick="saveQuickObservation('Çalışıyor')">2. Çalışıyor</button>
+                    <button class="btn btn-outline-success btn-status" onclick="saveQuickObservation('Ustalaştı')">3. Ustalaştı</button>
                 </div>
+                <textarea class="form-control mt-2" id="obsNote" rows="2" placeholder="Not ekle (Opsiyonel)..." style="border-radius: 12px;"></textarea>
+            </div>
         </div>
     </div>
 </div>
@@ -70,26 +78,20 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    loadClasses(); 
-});
+document.addEventListener('DOMContentLoaded', loadClasses);
 
 async function loadClasses() {
     try {
         const response = await fetch('/api/classes');
         const classes = await response.json();
         const list = document.getElementById('classList');
-
         list.innerHTML = ''; 
-
         classes.forEach(c => {
             const li = document.createElement('li');
             li.innerHTML = `<a class="dropdown-item py-2" href="#" onclick="selectClass('${c._id}', '${c.className}')">${c.className}</a>`;
             list.appendChild(li);
         });
-    } catch (err) {
-        console.error("Sınıflar yüklenemedi:", err);
-    }
+    } catch (err) { console.error("Sınıflar yüklenemedi:", err); }
 }
 
 async function selectClass(id, name) {
@@ -114,27 +116,52 @@ async function loadStudents(classId) {
 
         students.forEach(s => {
             const initials = (s.firstName[0] || '') + (s.lastName[0] || '');
+            // Backend'den gelen 'ageInMonths' virtual alanını kullanıyoruz
+            const ageDisplay = s.ageInMonths !== null ? s.ageInMonths : '?';
+            
             container.innerHTML += `
                 <div class="col">
                     <div class="student-card p-3 shadow-sm d-flex align-items-center" onclick="openObservation('${s._id}', '${s.firstName} ${s.lastName}')">
                         <div class="avatar me-3">${initials}</div>
                         <div>
                             <h6 class="mb-0 fw-bold">${s.firstName} ${s.lastName}</h6>
-                            <small class="text-muted">${s.ageInMonths || '?'} Aylık</small>
+                            <small class="text-muted">${ageDisplay} Aylık</small>
                         </div>
                     </div>
                 </div>
             `;
         });
-    } catch (err) {
-        container.innerHTML = '<p class="text-center mt-5">Hata: Öğrenciler yüklenemedi.</p>';
-    }
+    } catch (err) { container.innerHTML = '<p class="text-center mt-5">Hata: Öğrenciler yüklenemedi.</p>'; }
 }
 
-function openObservation(id, name) {
+let activeStudentId = null;
+
+async function openObservation(id, name) {
+    activeStudentId = id;
     document.getElementById('selectedStudentName').innerText = name;
+    
+    // Materyalleri yükle
+    const lessonRes = await fetch('/api/lessons'); // Henüz bu API'yi yazmadık ama hazırlığını yapalım
+    const lessons = await lessonRes.json();
+    const lessonSelect = document.getElementById('lessonList');
+    lessonSelect.innerHTML = '<option selected disabled>Çalışma Seçin...</option>';
+    lessons.forEach(l => {
+        lessonSelect.innerHTML += `<option value="${l._id}">${l.lessonName}</option>`;
+    });
+
     const myModal = new bootstrap.Modal(document.getElementById('observationModal'));
     myModal.show();
+}
+
+// Şimdilik sadece konsola basar, bir sonraki adımda kaydedeceğiz
+async function saveQuickObservation(status) {
+    const lessonId = document.getElementById('lessonList').value;
+    const note = document.getElementById('obsNote').value;
+    
+    if(!lessonId) return alert("Lütfen bir çalışma seçin!");
+
+    console.log("Kaydediliyor:", { activeStudentId, lessonId, status, note });
+    alert("Gözlem şimdilik konsola yazıldı, bir sonraki adımda kaydedeceğiz!");
 }
 </script>
 
