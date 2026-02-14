@@ -83,3 +83,13 @@ app.listen(port, () => {
     console.log(`🚀 Sunucu v1.0.3 - Port: ${port}`);
     console.log(`📂 Views Klasörü: ${viewsPath}`);
 });
+
+// Yeni Öğrenci Ekle
+app.post('/api/students', async (req, res) => {
+    try {
+        const newStudent = await Student.create(req.body);
+        res.json(newStudent);
+    } catch (err) {
+        res.status(500).json({ error: "Öğrenci eklenemedi" });
+    }
+});
