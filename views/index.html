@@ -3,151 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Montessori Takip Sistemi</title>
+    <title>Montessori - Gözlem Paneli</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Arka plan için yumuşak kum beji/fildişi tonu */
-        body { background-color: #fdfaf5; font-family: 'Nunito', sans-serif; color: #4a4a4a; }
+        body { background-color: #fdfaf5; font-family: 'Nunito', sans-serif; padding-bottom: 70px; }
         
-        /* Kart Tasarımı */
-        .montessori-card { 
+        /* Üst Header */
+        .top-header { background: #4a5d4e; color: white; padding: 15px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* Öğrenci Kartları */
+        .student-card { 
             border: 1px solid #e9e0d2; 
-            border-radius: 12px; 
-            transition: all 0.3s ease; 
-            background: #ffffff;
-            height: 100%;
+            border-radius: 15px; 
+            background: white; 
+            transition: all 0.2s;
+            cursor: pointer;
         }
-        .montessori-card:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 20px rgba(74, 93, 78, 0.1);
-            border-color: #4a5d4e;
-        }
+        .student-card:active { transform: scale(0.95); background: #f0f0f0; }
 
-        /* Avatar Çemberi */
-        .avatar {
-            width: 45px;
-            height: 45px;
-            background-color: #d1d9cf;
-            color: #4a5d4e;
+        /* ALT MENÜ (Seçenek A) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 0.9rem;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
+        .nav-item-mobile {
+            text-align: center;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        .nav-item-mobile.active { color: #4a5d4e; font-weight: bold; }
+        .nav-item-mobile i { font-size: 1.2rem; display: block; margin-bottom: 2px; }
 
-        /* Yan Menü */
-        .sidebar { background: #4a5d4e; color: white; min-height: 100vh; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
-        .nav-link { color: rgba(255,255,255,0.7); margin-bottom: 10px; border-radius: 8px; }
-        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
-        
-        .section-title { font-weight: 700; color: #2c3e50; border-bottom: 2px solid #e9e0d2; padding-bottom: 10px; }
+        /* Modal Düzenlemeleri */
+        .btn-status { padding: 15px; font-weight: bold; border-radius: 12px; margin-bottom: 10px; width: 100%; text-align: left; }
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-        <nav class="col-md-2 d-none d-md-block sidebar p-4 sticky-top">
-            <div class="text-center mb-5">
-                <i class="fas fa-leaf fa-2x mb-2 text-warning"></i>
-                <h5 class="text-uppercase tracking-wider">Montessori App</h5>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link active" href="#"><i class="fas fa-th-large me-2"></i> Gözlem Paneli</a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-user-friends me-2"></i> Öğrenciler</a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-layer-group me-2"></i> Sınıflar</a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-file-invoice me-2"></i> Raporlar</a></li>
-            </ul>
-        </nav>
-
-        <main class="col-md-10 p-4 p-md-5">
-            <div class="row align-items-center mb-5">
-                <div class="col-md-6">
-                    <h2 class="section-title">Gözlem Kaydı</h2>
-                    <p class="text-muted small">Bugün için gözlemlerinizi hızlıca kaydedin.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <label class="small fw-bold text-muted d-block mb-1">Sınıf Seçimi</label>
-                    <select class="form-select d-inline-block w-auto shadow-sm border-0" style="min-width: 200px; border-radius: 10px;">
-                        <option>Kelebekler Sınıfı</option>
-                        <option>Arılar Sınıfı</option>
-                        <option>Uğur Böcekleri Sınıfı</option>
-                        <option>Yıldızlar Sınıfı</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-                
-                <script>
-                    const ogrenciler = [
-                        "Ali Yılmaz", "Ayşe Demir", "Can Özkan", "Deniz Aktaş", 
-                        "Elif Kaya", "Fatma Çelik", "Gökhan Aras", "Hale Şahin",
-                        "İlker Bulut", "Jale Aydın", "Kaan Yıldız", "Leyla Mert",
-                        "Murat Efe", "Nihan Koç", "Ozan Güler", "Pelin Işık"
-                    ];
-                    
-                    ogrenciler.forEach(isim => {
-                        const initials = isim.split(' ').map(n => n[0]).join('');
-                        document.write(`
-                            <div class="col">
-                                <div class="card montessori-card p-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#observationModal">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar me-3">${initials}</div>
-                                        <div>
-                                            <h6 class="mb-0 fw-bold">${isim}</h6>
-                                            <small class="text-muted" style="font-size: 0.75rem;">Son Giriş: Dün</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `);
-                    });
-                </script>
-                </div>
-        </main>
+<div class="top-header mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <h4 class="mb-0 fw-bold">Montessori App</h4>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="classSelectBtn">
+                Sınıf Seçin
+            </button>
+            <ul class="dropdown-menu shadow" id="classList">
+                </ul>
+        </div>
     </div>
 </div>
 
+<div class="container px-3">
+    <div id="welcomeMessage" class="text-center p-5">
+        <i class="fas fa-hand-pointer fa-3x text-muted mb-3"></i>
+        <h5>Lütfen bir sınıf seçin</h5>
+        <p class="small text-muted">Öğrencileri listelemek için yukarıdaki menüyü kullanın.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 g-3" id="studentContainer">
+        </div>
+</div>
+
+<div class="bottom-nav">
+    <a href="/" class="nav-item-mobile active">
+        <i class="fas fa-th-large"></i> Paneller
+    </a>
+    <a href="/ayarlar" class="nav-item-mobile">
+        <i class="fas fa-cog"></i> Ayarlar
+    </a>
+    <a href="#" class="nav-item-mobile">
+        <i class="fas fa-chart-pie"></i> Raporlar
+    </a>
+</div>
+
 <div class="modal fade" id="observationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+    <div class="modal-dialog modal-dialog-centered p-3">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold">Hızlı Gözlem</h5>
+                <h5 class="modal-title fw-bold" id="selectedStudentName">Hızlı Gözlem</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Çalışma</label>
-                    <select class="form-select shadow-sm border-light">
-                        <option>Pembe Kule</option>
-                        <option>Sayı Kartları</option>
-                        <option>Silindir Bloklar</option>
+                <select class="form-select mb-3" id="lessonList">
+                    <option selected disabled>Çalışma Seçin...</option>
                     </select>
+                
+                <div class="status-buttons">
+                    <button class="btn btn-outline-info btn-status" onclick="selectStatus('Sunuldu')">1. Sunuldu</button>
+                    <button class="btn btn-outline-warning btn-status" onclick="selectStatus('Çalışıyor')">2. Çalışıyor</button>
+                    <button class="btn btn-outline-success btn-status" onclick="selectStatus('Ustalaştı')">3. Ustalaştı</button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Durum</label>
-                    <div class="d-flex flex-column gap-2">
-                        <button class="btn btn-outline-info text-start py-2">1. Sunuldu</button>
-                        <button class="btn btn-outline-warning text-start py-2">2. Üzerinde Çalışıyor</button>
-                        <button class="btn btn-outline-success text-start py-2">3. Ustalaştı</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="form-label small fw-bold">Notlar</label>
-                    <textarea class="form-control border-light shadow-sm" rows="3" placeholder="Gözleminiz varsa buraya yazın..."></textarea>
-                </div>
+
+                <textarea class="form-control mt-2" id="obsNote" rows="2" placeholder="Not ekle (Opsiyonel)..."></textarea>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-dark w-100 py-3 mt-2" style="border-radius: 12px;">Kaydet ve Kapat</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-dark w-100 py-3" style="border-radius: 15px;">KAYDET</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // --- BURASI YARININ SİHİRLİ KODLARININ YERİ ---
+    // API'den sınıfları ve öğrencileri çekme işlemleri burada yapılacak.
+</script>
+
 </body>
 </html>
