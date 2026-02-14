@@ -1,75 +1,60 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path'); // Dosya yolları için gerekli
 require('dotenv').config();
 
-// 1. Önce MODELLERİ ÇAĞIRALIM (Dosya yollarının doğru olduğundan emin ol)
+const app = express();
+app.use(express.json());
+app.use(express.static('views')); // HTML ve CSS dosyalarını dışarı açar
+
+// Modeller
 const Class = require('./models/Class');
 const Student = require('./models/Student');
 const Lesson = require('./models/Lesson');
+const Observation = require('./models/Observation');
 
-// 2. APP AYARLARI
-const app = express();
-app.use(express.json()); 
+// MONGODB BAĞLANTISI
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB bağlantısı başarılı!'))
+  .catch((err) => console.error('❌ Bağlantı hatası:', err));
+
+// --- SAYFA ROTALARI ---
+
+// Ana Sayfa (Öğretmen Paneli)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../views/index.html'));
+});
+
+// Ayarlar Sayfası (Okul Sahibi Paneli)
+app.get('/ayarlar', (req, res) => {
+    res.sendFile(path.join(__dirname, '../views/settings.html'));
+});
+
+// --- API ROTALARI (Veri İşlemleri) ---
+
+// Sınıfları Getir
+app.get('/api/classes', async (req, res) => {
+    const classes = await Class.find();
+    res.json(classes);
+});
+
+// Sınıf Ekle
+app.post('/api/classes', async (req, res) => {
+    const newClass = await Class.create(req.body);
+    res.json(newClass);
+});
+
+// Materyal (Lesson) Ekle
+app.post('/api/lessons', async (req, res) => {
+    const newLesson = await Lesson.create(req.body);
+    res.json(newLesson);
+});
+
+// Öğrencileri Sınıfa Göre Getir
+app.get('/api/students/:classId', async (req, res) => {
+    const students = await Student.find({ currentClass: req.params.classId });
+    res.json(students);
+});
 
 const port = process.env.PORT || 8080;
-const mongoURI = process.env.MONGO_URI;
-
-// 3. VERİTABANI BAĞLANTISI
-mongoose.connect(mongoURI)
-  .then(() => console.log('✅ MongoDB bağlantısı başarılı!'))
-  .catch((err) => console.error('❌ MongoDB bağlantı hatası:', err));
-
-// --- MATERYAL KURMA ROTASI ---
-app.get('/materyal-kur', async (req, res) => {
-  try {
-    const dersler = [
-      { area: 'Duyusal', lessonName: 'Pembe Kule', difficultyLevel: 3 },
-      { area: 'Matematik', lessonName: 'Sayı Kartları', difficultyLevel: 5 },
-      { area: 'Günlük Yaşam', lessonName: 'Kaşıklama', difficultyLevel: 2 }
-    ];
-    // Daha önce eklenmişse hata vermemesi için temizleyip ekleyebiliriz veya direkt insert edebiliriz
-    await Lesson.deleteMany({}); // Test aşamasında listeyi temizlemek iyidir
-    await Lesson.insertMany(dersler);
-    res.send("<h1>✅ Materyaller Başarıyla Kuruldu!</h1>");
-  } catch (err) {
-    res.status(500).send("Hata: " + err.message);
-  }
-});
-
-// --- ÖĞRENCİ VE SINIF TEST ROTASI ---
-app.get('/test-ekle', async (req, res) => {
-  try {
-    // Unique hatası almamak için her seferinde rastgele bir isim ekleyelim ya da varsa onu kullanalım
-    const sinifAdi = "Kelebekler Sınıfı " + Math.floor(Math.random() * 100);
-    
-    const yeniSinif = await Class.create({
-      className: sinifAdi,
-      teacherName: "Ayşe Öğretmen"
-    });
-
-    const yeniOgrenci = await Student.create({
-      firstName: "Ali",
-      lastName: "Yılmaz",
-      birthDate: new Date('2022-05-15'),
-      currentClass: yeniSinif._id,
-      montessoriExperience: false
-    });
-
-    res.send(`
-      <h1>✅ Kayıt Başarılı!</h1>
-      <p><b>Sınıf:</b> ${yeniSinif.className}</p>
-      <p><b>Öğrenci:</b> ${yeniOgrenci.firstName} ${yeniOgrenci.lastName}</p>
-      <p><b>Yaş (Ay):</b> ${yeniOgrenci.ageInMonths} aylık</p>
-    `);
-  } catch (err) {
-    res.status(500).send("Hata oluştu: " + err.message);
-  }
-});
-
-app.get('/', (req, res) => {
-  res.send('<h1>🚀 Montessori Sistemi Canlıda!</h1><p>/test-ekle veya /materyal-kur adreslerini kullanın.</p>');
-});
-
-app.listen(port, () => {
-  console.log(`Sunucu ${port} üzerinde çalışıyor.`);
-});
+app.listen(port, () => console.log(`Sunucu ${port} üzerinde hazır!`));
