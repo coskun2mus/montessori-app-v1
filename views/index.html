@@ -4,48 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Montessori - Gözlem Paneli</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #fdfaf5; font-family: 'Nunito', sans-serif; padding-bottom: 70px; }
-        
-        /* Üst Header */
+        body { background-color: #fdfaf5; font-family: 'Nunito', sans-serif; padding-bottom: 80px; }
         .top-header { background: #4a5d4e; color: white; padding: 15px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        /* Öğrenci Kartları */
-        .student-card { 
-            border: 1px solid #e9e0d2; 
-            border-radius: 15px; 
-            background: white; 
-            transition: all 0.2s;
-            cursor: pointer;
-        }
+        .student-card { border: 1px solid #e9e0d2; border-radius: 15px; background: white; transition: all 0.2s; cursor: pointer; }
         .student-card:active { transform: scale(0.95); background: #f0f0f0; }
-
-        /* ALT MENÜ (Seçenek A) */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-        .nav-item-mobile {
-            text-align: center;
-            color: #888;
-            text-decoration: none;
-            font-size: 0.8rem;
-        }
+        
+        /* Alt Menü */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item-mobile { text-align: center; color: #888; text-decoration: none; font-size: 0.8rem; }
         .nav-item-mobile.active { color: #4a5d4e; font-weight: bold; }
         .nav-item-mobile i { font-size: 1.2rem; display: block; margin-bottom: 2px; }
-
-        /* Modal Düzenlemeleri */
-        .btn-status { padding: 15px; font-weight: bold; border-radius: 12px; margin-bottom: 10px; width: 100%; text-align: left; }
+        
+        .avatar { background: #e9e0d2; color: #4a5d4e; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -54,10 +28,10 @@
     <div class="container d-flex justify-content-between align-items-center">
         <h4 class="mb-0 fw-bold">Montessori App</h4>
         <div class="dropdown">
-            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="classSelectBtn">
+            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="classSelectBtn" data-bs-toggle="dropdown" aria-expanded="false">
                 Sınıf Seçin
             </button>
-            <ul class="dropdown-menu shadow" id="classList">
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="classList" style="border-radius: 12px;">
                 </ul>
         </div>
     </div>
@@ -65,25 +39,18 @@
 
 <div class="container px-3">
     <div id="welcomeMessage" class="text-center p-5">
-        <i class="fas fa-hand-pointer fa-3x text-muted mb-3"></i>
+        <i class="fas fa-hand-pointer fa-3x text-muted mb-3 d-block"></i>
         <h5>Lütfen bir sınıf seçin</h5>
         <p class="small text-muted">Öğrencileri listelemek için yukarıdaki menüyü kullanın.</p>
     </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 g-3" id="studentContainer">
-        </div>
+    <div class="row row-cols-1 row-cols-md-2 g-3" id="studentContainer"></div>
 </div>
 
 <div class="bottom-nav">
-    <a href="/" class="nav-item-mobile active">
-        <i class="fas fa-th-large"></i> Paneller
-    </a>
-    <a href="/ayarlar" class="nav-item-mobile">
-        <i class="fas fa-cog"></i> Ayarlar
-    </a>
-    <a href="#" class="nav-item-mobile">
-        <i class="fas fa-chart-pie"></i> Raporlar
-    </a>
+    <a href="/" class="nav-item-mobile active"><i class="fas fa-th-large"></i> Paneller</a>
+    <a href="/ayarlar" class="nav-item-mobile"><i class="fas fa-cog"></i> Ayarlar</a>
+    <a href="#" class="nav-item-mobile"><i class="fas fa-chart-pie"></i> Raporlar</a>
 </div>
 
 <div class="modal fade" id="observationModal" tabindex="-1">
@@ -93,22 +60,9 @@
                 <h5 class="modal-title fw-bold" id="selectedStudentName">Hızlı Gözlem</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <select class="form-select mb-3" id="lessonList">
-                    <option selected disabled>Çalışma Seçin...</option>
-                    </select>
-                
-                <div class="status-buttons">
-                    <button class="btn btn-outline-info btn-status" onclick="selectStatus('Sunuldu')">1. Sunuldu</button>
-                    <button class="btn btn-outline-warning btn-status" onclick="selectStatus('Çalışıyor')">2. Çalışıyor</button>
-                    <button class="btn btn-outline-success btn-status" onclick="selectStatus('Ustalaştı')">3. Ustalaştı</button>
+            <div class="modal-body" id="modalBodyContent">
+                <p class="text-muted small">Bu öğrenci için gözlem kaydı oluşturun.</p>
                 </div>
-
-                <textarea class="form-control mt-2" id="obsNote" rows="2" placeholder="Not ekle (Opsiyonel)..."></textarea>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-dark w-100 py-3" style="border-radius: 15px;">KAYDET</button>
-            </div>
         </div>
     </div>
 </div>
@@ -116,20 +70,17 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  // Sayfa açıldığında çalışacak fonksiyonlar
 document.addEventListener('DOMContentLoaded', () => {
-    loadClasses(); // Sınıfları veritabanından çek
+    loadClasses(); 
 });
 
-// 1. Veritabanındaki Sınıfları Getir ve Dropdown'a Yaz
 async function loadClasses() {
     try {
         const response = await fetch('/api/classes');
         const classes = await response.json();
         const list = document.getElementById('classList');
-        const btn = document.getElementById('classSelectBtn');
 
-        list.innerHTML = ''; // Listeyi temizle
+        list.innerHTML = ''; 
 
         classes.forEach(c => {
             const li = document.createElement('li');
@@ -141,16 +92,12 @@ async function loadClasses() {
     }
 }
 
-// 2. Bir sınıf seçildiğinde ne olacak?
 async function selectClass(id, name) {
-    document.getElementById('classSelectBtn').innerText = name; // Butonun ismini değiştir
-    document.getElementById('welcomeMessage').classList.add('d-none'); // Hoşgeldin yazısını gizle
-    
-    // Öğrencileri getir
+    document.getElementById('classSelectBtn').innerText = name;
+    document.getElementById('welcomeMessage').classList.add('d-none');
     loadStudents(id);
 }
 
-// 3. Seçilen Sınıfın Öğrencilerini Getir
 async function loadStudents(classId) {
     const container = document.getElementById('studentContainer');
     container.innerHTML = '<div class="text-center w-100 mt-5"><div class="spinner-border text-success"></div></div>';
@@ -158,8 +105,7 @@ async function loadStudents(classId) {
     try {
         const response = await fetch(`/api/students/${classId}`);
         const students = await response.json();
-        
-        container.innerHTML = ''; // Spinner'ı temizle
+        container.innerHTML = ''; 
 
         if(students.length === 0) {
             container.innerHTML = '<p class="text-center mt-5">Bu sınıfta henüz öğrenci yok.</p>';
@@ -167,24 +113,28 @@ async function loadStudents(classId) {
         }
 
         students.forEach(s => {
-            const initials = s.firstName[0] + s.lastName[0];
+            const initials = (s.firstName[0] || '') + (s.lastName[0] || '');
             container.innerHTML += `
                 <div class="col">
                     <div class="student-card p-3 shadow-sm d-flex align-items-center" onclick="openObservation('${s._id}', '${s.firstName} ${s.lastName}')">
-                        <div class="avatar me-3" style="background: #e9e0d2; color: #4a5d4e; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;">
-                            ${initials}
-                        </div>
+                        <div class="avatar me-3">${initials}</div>
                         <div>
                             <h6 class="mb-0 fw-bold">${s.firstName} ${s.lastName}</h6>
-                            <small class="text-muted">${s.ageInMonths} Aylık</small>
+                            <small class="text-muted">${s.ageInMonths || '?'} Aylık</small>
                         </div>
                     </div>
                 </div>
             `;
         });
     } catch (err) {
-        container.innerHTML = 'Öğrenciler yüklenirken hata oluştu.';
+        container.innerHTML = '<p class="text-center mt-5">Hata: Öğrenciler yüklenemedi.</p>';
     }
+}
+
+function openObservation(id, name) {
+    document.getElementById('selectedStudentName').innerText = name;
+    const myModal = new bootstrap.Modal(document.getElementById('observationModal'));
+    myModal.show();
 }
 </script>
 

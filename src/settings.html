@@ -1,33 +1,68 @@
-<div class="row g-4"> <div class="col-12 col-lg-6">
-        <div class="card admin-card p-4 h-100">
-            <h5 class="mb-4 text-success fw-bold"><i class="fas fa-door-open me-2"></i>Sınıf Tanımla</h5>
-            <div class="mb-3">
-                <input type="text" id="className" class="form-control form-control-lg" placeholder="Sınıf Adı (Örn: Arılar)">
-            </div>
-            <div class="mb-3">
-                <input type="text" id="teacherName" class="form-control form-control-lg" placeholder="Sorumlu Öğretmen">
-            </div>
-            <button onclick="saveClass()" class="btn btn-success btn-lg w-100 shadow-sm mt-2">Sınıfı Kaydet</button>
-        </div>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montessori - Ayarlar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #fdfaf5; font-family: 'Nunito', sans-serif; padding: 20px; }
+        .admin-card { border-radius: 20px; border: none; box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 25px; }
+        .form-control-lg, .form-select-lg { border-radius: 12px; font-size: 1rem; }
+        .btn-lg { border-radius: 12px; padding: 15px; font-weight: bold; }
+        h2 { color: #4a5d4e; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="text-center mb-5">
+        <a href="/" class="btn btn-outline-secondary btn-sm mb-3">← Panele Dön</a>
+        <h2>Okul Yönetimi</h2>
     </div>
 
-    <div class="col-12 col-lg-6">
-        <div class="card admin-card p-4 h-100">
-            <h5 class="mb-4 text-primary fw-bold"><i class="fas fa-cube me-2"></i>Yeni Materyal</h5>
-            <select id="lessonArea" class="form-select form-select-lg mb-3">
-                <option>Günlük Yaşam</option>
-                <option>Duyusal</option>
-                <option>Matematik</option>
-                <option>Dil</option>
-                <option>Kültür</option>
-            </select>
-            <input type="text" id="lessonName" class="form-control form-control-lg mb-3" placeholder="Materyal Adı">
-            
-            <div class="mb-3">
-                <label class="form-label small fw-bold text-muted">Zorluk Seviyesi</label>
-                <input type="range" id="difficulty" class="form-range" min="1" max="10">
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
+            <div class="card admin-card p-4">
+                <h5 class="mb-4 text-success"><i class="fas fa-door-open me-2"></i>Sınıf Tanımla</h5>
+                <input type="text" id="className" class="form-control form-control-lg mb-3" placeholder="Sınıf Adı">
+                <input type="text" id="teacherName" class="form-control form-control-lg mb-3" placeholder="Öğretmen Adı">
+                <button onclick="saveClass()" class="btn btn-success btn-lg w-100 shadow">Sınıfı Kaydet</button>
             </div>
-            <button onclick="saveLesson()" class="btn btn-primary btn-lg w-100 shadow-sm">Müfredata Ekle</button>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card admin-card p-4">
+                <h5 class="mb-4 text-primary"><i class="fas fa-cube me-2"></i>Materyal Ekle</h5>
+                <select id="lessonArea" class="form-select form-select-lg mb-3">
+                    <option>Günlük Yaşam</option>
+                    <option>Duyusal</option>
+                    <option>Matematik</option>
+                    <option>Dil</option>
+                </select>
+                <input type="text" id="lessonName" class="form-control form-control-lg mb-3" placeholder="Materyal Adı">
+                <div class="mb-3">
+                    <label class="small fw-bold">Zorluk (1-10)</label>
+                    <input type="range" id="difficulty" class="form-range" min="1" max="10">
+                </div>
+                <button onclick="saveLesson()" class="btn btn-primary btn-lg w-100 shadow">Müfredata Ekle</button>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    async function saveClass() {
+        const data = { className: document.getElementById('className').value, teacherName: document.getElementById('teacherName').value };
+        const res = await fetch('/api/classes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        if(res.ok) alert("Sınıf Kaydedildi!");
+    }
+    async function saveLesson() {
+        const data = { area: document.getElementById('lessonArea').value, lessonName: document.getElementById('lessonName').value, difficultyLevel: document.getElementById('difficulty').value };
+        const res = await fetch('/api/lessons', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        if(res.ok) alert("Materyal Eklendi!");
+    }
+</script>
+</body>
+</html>
