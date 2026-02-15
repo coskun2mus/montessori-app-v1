@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types;
 const path = require('path');
 require('dotenv').config();
 
@@ -114,10 +115,35 @@ app.get('/api/students/all', async (req, res) => {
 // SONRA BUNU KOY (Değişkenli/Parametreli rotalar altta olmalı)
 app.get('/api/students/:classId', async (req, res) => {
     try {
-        // Eğer classId bir MongoDB ID formatında değilse catch bloğuna düşer
-        const students = await Student.find({ currentClass: req.params.classId });
+        const { classId } = req.params;
+
+        // "all" kelimesi yanlışlıkla buraya düşerse koruma
+        if (classId === 'all') {
+            const all = await Student.find().sort({ firstName: 1 });
+            return res.json(all);
+        }
+
+        // HEM String olarak HEM de ObjectId olarak arıyoruz ($or operatörü ile)
+        // Bu sayede eski kayıtlar da yeni kayıtlar da yakalanır.
+        let query = { 
+            $or: [
+                { currentClass: classId },
+                { currentClass: classId.toString() }
+            ] 
+        };
+
+        // Eğer gelen ID geçerli bir MongoDB ID'siyse, listeye ObjectId halini de ekle
+        if (mongoose.Types.ObjectId.isValid(classId)) {
+            query.$or.push({ currentClass: new ObjectId(classId) });
+        }
+
+        const students = await Student.find(query).sort({ firstName: 1 });
+        
+        console.log(`Sorgu: ${classId} | Sonuç: ${students.length} öğrenci`);
         res.json(students);
+        
     } catch (err) {
+        console.error("Öğrenci çekme hatası:", err);
         res.status(500).json({ error: "Sınıf öğrencileri getirilemedi" });
     }
 });
