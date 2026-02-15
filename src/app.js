@@ -149,7 +149,7 @@ app.get('/api/students/:classId', async (req, res) => {
 });
 
 app.post('/api/students', async (req, res) => {
-    try {
+    try { 
         const { firstName, lastName, birthDate } = req.body;
         const existingStudent = await Student.findOne({ 
             firstName: firstName.trim(), 

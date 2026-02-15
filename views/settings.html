@@ -219,17 +219,36 @@
             alert("⚠️ Hata: " + (result.error || "Öğrenci kaydedilemedi."));
         }
     }
-
-    async function changeStudentClass(sId, cId) {
-        try {
-            await fetch(`/api/students/${sId}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ currentClass: cId })
-            });
-        } catch (err) { console.error("Sınıf değiştirme hatası:", err); }
+// settings.html içindeki sınıf değiştirme fonksiyonun muhtemelen şuna benziyor:
+async function changeStudentClass(studentId, newClassId, studentName) {
+    // 1. TEYİT AŞAMASI: Kullanıcıya soralım
+    const confirmChange = confirm(`${studentName} isimli öğrencinin sınıfını değiştirmek istediğinize emin misiniz?`);
+    
+    if (!confirmChange) {
+        // Eğer kullanıcı vazgeçerse sayfayı yenile ki dropdown eski haline dönsün
+        loadStudents(); 
+        return;
     }
 
+    try {
+        const res = await fetch(`/api/students/${studentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentClass: newClassId })
+        });
+
+        if (res.ok) {
+            // 2. BİLGİLENDİRME AŞAMASI: Başarı mesajı
+            alert("Sınıf başarıyla güncellendi! ✨");
+            loadStudents(); // Listeyi tazele
+        } else {
+            alert("Güncelleme sırasında bir hata oluştu.");
+        }
+    } catch (err) {
+        console.error("Hata:", err);
+        alert("Bağlantı hatası!");
+    }
+}
     async function editClass(id, currentTeacher) {
         const newTeacher = prompt("Yeni öğretmen ismini giriniz:", currentTeacher);
         if(!newTeacher || newTeacher.trim() === currentTeacher) return;
