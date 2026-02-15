@@ -1,68 +1,141 @@
 /* views/style.css */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
 
 body { 
-    background-color: #fdfaf5; 
-    font-family: 'Nunito', sans-serif; 
-    padding-bottom: 80px; 
-    color: #4a5d4e;
+    background-color: #fcfaf7; /* Biraz daha sıcak bir krem tonu */
+    font-family: 'Poppins', sans-serif; /* Genel okunabilirlik için Poppins */
+    padding-bottom: 90px; 
+    color: #3e4d41;
 }
 
-/* Kart Modernizasyonu */
-.admin-card, .student-card {
+/* --- HERO SECTION (Görsel ve Okul İsmi Alanı) --- */
+.hero-section {
+    position: relative;
+    background: url('logo.png') no-repeat center center;
+    background-size: cover;
+    height: 450px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0 40px 40px;
+    overflow: hidden;
+    margin-bottom: -50px; /* Sınıf seçim kartıyla iç içe geçmesi için */
+}
+
+/* Görseli silikleştirmeden yazıyı okutan sihirli katman */
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+.school-title {
+    font-family: 'Playfair Display', serif; /* Klasik ve ağırbaşlı font */
+    font-size: 3.2rem;
+    text-shadow: 2px 4px 10px rgba(0,0,0,0.5);
+    margin-bottom: 5px;
+}
+
+.motto {
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+/* --- KARTLAR VE MODERNİZASYON --- */
+.admin-card, .student-card, .class-selector-card {
     border-radius: 20px;
     border: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
     background: white;
-    transition: transform 0.2s ease;
+    transition: all 0.3s ease;
+}
+
+.student-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 
 .student-card:active {
     transform: scale(0.96);
 }
 
-/* Tarih Seçici (Date Picker) Modernizasyonu */
+/* --- TARİH SEÇİCİ (DATE PICKER) --- */
 input[type="date"] {
     position: relative;
     padding: 12px;
     appearance: none;
     -webkit-appearance: none;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #eee;
     border-radius: 12px;
+    background-color: #f8f9fa;
 }
 
-/* Tarih seçicinin o sıkıcı ikonunu gizleyip tüm alanı tıklanabilir yapıyoruz */
 input[type="date"]::-webkit-calendar-picker-indicator {
     background: transparent;
-    bottom: 0;
-    color: transparent;
-    cursor: pointer;
-    height: auto;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: auto;
+    bottom: 0; color: transparent; cursor: pointer;
+    height: auto; left: 0; position: absolute;
+    right: 0; top: 0; width: auto;
 }
 
-/* Butonlar */
-.btn-lg {
-    border-radius: 12px;
-    padding: 15px;
-    font-weight: bold;
+/* --- BUTONLAR --- */
+.btn-liberum {
+    background-color: #2e7d32;
+    color: white;
+    padding: 12px 35px;
+    border-radius: 50px;
+    font-weight: 600;
     border: none;
+    transition: all 0.3s;
 }
 
-/* Alt Menü */
+.btn-liberum:hover {
+    background-color: #1b5e20;
+    color: white;
+    box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+}
+
+/* --- ALT MENÜ (NAVBAR) --- */
 .bottom-nav {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px); /* Modern cam efekti */
     display: flex;
     justify-content: space-around;
-    padding: 12px 0;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+    padding: 15px 0;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
     z-index: 1000;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: #888;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: color 0.3s;
+}
+
+.nav-item.active {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.nav-item i {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
 }

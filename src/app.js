@@ -7,7 +7,7 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// Klasör yolları
+// Klasör yolları - Görsel dosyalar (logo vb.) için 'public' kullanımı önerilir
 const viewsPath = path.join(__dirname, '..', 'views');
 app.use(express.static(viewsPath));
 
@@ -19,18 +19,13 @@ const Observation = require('./models/Observation');
 
 // MONGODB BAĞLANTISI
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB bağlantısı başarılı!'))
+  .then(() => console.log('✅ Liberum DB Bağlantısı Başarılı!'))
   .catch((err) => console.error('❌ Bağlantı hatası:', err));
 
 // --- SAYFA ROTALARI ---
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(viewsPath, 'index.html'));
-});
-
-app.get('/ayarlar', (req, res) => {
-    res.sendFile(path.join(viewsPath, 'settings.html'));
-});
+app.get('/', (req, res) => res.sendFile(path.join(viewsPath, 'index.html')));
+app.get('/ayarlar', (req, res) => res.sendFile(path.join(viewsPath, 'settings.html')));
+app.get('/raporlar', (req, res) => res.sendFile(path.join(viewsPath, 'reports.html'))); // Raporlar sayfası hazırlığı
 
 // --- API ROTALARI ---
 
@@ -46,8 +41,10 @@ app.get('/api/classes', async (req, res) => {
 
 app.post('/api/classes', async (req, res) => {
     try {
-        const exists = await Class.findOne({ className: req.body.className });
-        if (exists) return res.status(400).json({ error: "Bu isimde bir sınıf zaten var!" });
+        const { className } = req.body;
+        // Case-insensitive (Büyük/Küçük harf duyarsız) kontrol
+        const exists = await Class.findOne({ className: { $regex: new RegExp(`^${className.trim()}$`, 'i') } });
+        if (exists) return res.status(400).json({ error: `"${className}" isimli bir sınıf zaten mevcut!` });
 
         const newClass = await Class.create(req.body);
         res.status(201).json(newClass);
@@ -56,7 +53,6 @@ app.post('/api/classes', async (req, res) => {
     }
 });
 
-// Sınıf Güncelleme (Öğretmen ismi değiştirmek için)
 app.put('/api/classes/:id', async (req, res) => {
     try {
         const updatedClass = await Class.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -68,8 +64,12 @@ app.put('/api/classes/:id', async (req, res) => {
 
 app.delete('/api/classes/:id', async (req, res) => {
     try {
+        // Sınıfı silmeden önce içinde öğrenci var mı kontrolü (opsiyonel ama güvenli)
+        const hasStudent = await Student.findOne({ currentClass: req.params.id });
+        if (hasStudent) return res.status(400).json({ error: "Bu sınıfta kayıtlı öğrenciler var. Önce öğrencileri transfer edin!" });
+
         await Class.findByIdAndDelete(req.params.id);
-        res.json({ message: "Sınıf başarıyla silindi." });
+        res.json({ message: "Sınıf silindi." });
     } catch (err) {
         res.status(500).json({ error: "Sınıf silinemedi." });
     }
@@ -87,8 +87,9 @@ app.get('/api/lessons', async (req, res) => {
 
 app.post('/api/lessons', async (req, res) => {
     try {
-        const exists = await Lesson.findOne({ lessonName: req.body.lessonName });
-        if (exists) return res.status(400).json({ error: "Bu materyal zaten müfredatta var!" });
+        const { lessonName } = req.body;
+        const exists = await Lesson.findOne({ lessonName: { $regex: new RegExp(`^${lessonName.trim()}$`, 'i') } });
+        if (exists) return res.status(400).json({ error: `"${lessonName}" müfredatta zaten kayıtlı!` });
 
         const newLesson = await Lesson.create(req.body);
         res.status(201).json(newLesson);
@@ -97,34 +98,42 @@ app.post('/api/lessons', async (req, res) => {
     }
 });
 
-// 3. ÖĞRENCİLER
-// Belirli bir sınıfa göre öğrenciler
-// --- 3. ÖĞRENCİLER ---
+app.put('/api/lessons/:id', async (req, res) => {
+    try {
+        const updatedLesson = await Lesson.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json({ message: "Güncellendi", data: updatedLesson });
+    } catch (err) {
+        res.status(500).json({ error: "Güncelleme hatası." });
+    }
+});
 
-// ÖNCE BUNU KOY (Sabit rotalar her zaman üstte olmalı)
+app.delete('/api/lessons/:id', async (req, res) => {
+    try {
+        await Lesson.findByIdAndDelete(req.params.id);
+        res.json({ message: "Silindi" });
+    } catch (err) {
+        res.status(500).json({ error: "Silme hatası." });
+    }
+});
+
+// 3. ÖĞRENCİLER
 app.get('/api/students/all', async (req, res) => {
     try {
         const students = await Student.find().sort({ firstName: 1 });
         res.json(students);
     } catch (err) {
-        console.error("Tüm öğrenciler çekilirken hata:", err);
-        res.status(500).json({ error: "Öğrenci listesi alınamadı." });
+        res.status(500).json({ error: "Liste alınamadı." });
     }
 });
 
-// SONRA BUNU KOY (Değişkenli/Parametreli rotalar altta olmalı)
 app.get('/api/students/:classId', async (req, res) => {
     try {
         const { classId } = req.params;
-
-        // "all" kelimesi yanlışlıkla buraya düşerse koruma
         if (classId === 'all') {
             const all = await Student.find().sort({ firstName: 1 });
             return res.json(all);
         }
-
-        // HEM String olarak HEM de ObjectId olarak arıyoruz ($or operatörü ile)
-        // Bu sayede eski kayıtlar da yeni kayıtlar da yakalanır.
+        
         let query = { 
             $or: [
                 { currentClass: classId },
@@ -132,18 +141,13 @@ app.get('/api/students/:classId', async (req, res) => {
             ] 
         };
 
-        // Eğer gelen ID geçerli bir MongoDB ID'siyse, listeye ObjectId halini de ekle
         if (mongoose.Types.ObjectId.isValid(classId)) {
             query.$or.push({ currentClass: new ObjectId(classId) });
         }
 
         const students = await Student.find(query).sort({ firstName: 1 });
-        
-        console.log(`Sorgu: ${classId} | Sonuç: ${students.length} öğrenci`);
         res.json(students);
-        
     } catch (err) {
-        console.error("Öğrenci çekme hatası:", err);
         res.status(500).json({ error: "Sınıf öğrencileri getirilemedi" });
     }
 });
@@ -151,20 +155,18 @@ app.get('/api/students/:classId', async (req, res) => {
 app.post('/api/students', async (req, res) => {
     try { 
         const { firstName, lastName, birthDate } = req.body;
-        const existingStudent = await Student.findOne({ 
-            firstName: firstName.trim(), 
-            lastName: lastName.trim(), 
+        const exists = await Student.findOne({ 
+            firstName: { $regex: new RegExp(`^${firstName.trim()}$`, 'i') }, 
+            lastName: { $regex: new RegExp(`^${lastName.trim()}$`, 'i') }, 
             birthDate: new Date(birthDate) 
         });
 
-        if (existingStudent) {
-            return res.status(400).json({ error: "Bu öğrenci sistemde zaten kayıtlı!" });
-        }
+        if (exists) return res.status(400).json({ error: "Bu öğrenci sistemde zaten kayıtlı!" });
 
         const newStudent = await Student.create(req.body);
         res.status(201).json(newStudent);
     } catch (err) {
-        res.status(500).json({ error: "Öğrenci kaydedilirken hata oluştu." });
+        res.status(500).json({ error: "Kayıt hatası." });
     }
 });
 
@@ -180,47 +182,25 @@ app.put('/api/students/:id', async (req, res) => {
 app.delete('/api/students/:id', async (req, res) => {
     try {
         await Student.findByIdAndDelete(req.params.id);
-        res.json({ message: "Öğrenci kaydı silindi." });
+        res.json({ message: "Silindi." });
     } catch (err) {
-        res.status(500).json({ error: "Öğrenci silinemedi." });
-    }
-});
-// Materyal Güncelleme
-// Materyal Güncelleme
-app.put('/api/lessons/:id', async (req, res) => {
-    try {
-        const updatedLesson = await Lesson.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updatedLesson) return res.status(404).json({ error: "Materyal bulunamadı." });
-        res.json({ message: "Güncellendi", data: updatedLesson });
-    } catch (err) {
-        res.status(500).json({ error: "Güncelleme sırasında bir hata oluştu." });
+        res.status(500).json({ error: "Silinemedi." });
     }
 });
 
-// Materyal Silme
-app.delete('/api/lessons/:id', async (req, res) => {
-    try {
-        const deletedLesson = await Lesson.findByIdAndDelete(req.params.id);
-        if (!deletedLesson) return res.status(404).json({ error: "Materyal zaten mevcut değil." });
-        res.json({ message: "Silindi" });
-    } catch (err) {
-        res.status(500).json({ error: "Silme sırasında bir hata oluştu." });
-    }
-});
 // 4. GÖZLEMLER
 app.post('/api/observations', async (req, res) => {
     try {
         const newObservation = await Observation.create(req.body);
         res.status(201).json(newObservation);
     } catch (err) {
-        res.status(400).json({ error: "Gözlem kaydedilemedi.", details: err.message });
+        res.status(400).json({ error: "Gözlem kaydedilemedi." });
     }
 });
-// app.js içine ekle
+
 app.get('/api/observations/student/:studentId', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
-        // Gözlemleri bul, ders bilgisiyle (populate) birleştir ve tarihe göre tersten sırala
         const observations = await Observation.find({ student: req.params.studentId })
             .populate('lesson') 
             .sort({ observationDate: -1 })
@@ -230,8 +210,9 @@ app.get('/api/observations/student/:studentId', async (req, res) => {
         res.status(500).json({ error: "Gözlem geçmişi alınamadı." });
     }
 });
+
 // SUNUCU BAŞLATMA
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
-    console.log(`🚀 Sunucu v1.1.0 hazır! Port: ${port}`);
+    console.log(`🚀 Liberum Montessori Akademia v1.2.0 Port: ${port}`);
 });
