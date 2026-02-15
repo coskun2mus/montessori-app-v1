@@ -95,8 +95,14 @@
     });
 
     async function loadInitialData() {
-        await loadClasses(); 
-        loadManageStudents();
+        // Hata yönetimini buraya da ekleyelim ki biri çökerse diğeri çalışabilsin
+        try {
+            await loadClasses(); 
+        } catch(e) { console.error("Sınıf yükleme hatası:", e); }
+
+        try {
+            await loadManageStudents();
+        } catch(e) { console.error("Öğrenci yükleme hatası:", e); }
     }
 
     // --- SINIF İŞLEMLERİ ---
@@ -109,15 +115,18 @@
             const classManageList = document.getElementById('manageClassList');
             
             select.innerHTML = '<option selected disabled>Seçiniz...</option>';
-            classManageList.innerHTML = '';
+            classManageList.innerHTML = ''; // Temizle
+
+            // DİKKAT: Eski kodda burada allClasses.forEach dışındayken 'c' kullanılıyordu, sildim.
 
             allClasses.forEach(c => {
-                // Kayıt Dropdown
+                // 1. Kayıt Dropdown doldur
                 const opt = document.createElement('option');
-                opt.value = c._id; opt.innerText = c.className;
+                opt.value = c._id; 
+                opt.innerText = c.className;
                 select.appendChild(opt);
 
-                // Yönetim Kartı
+                // 2. Yönetim Kartlarını oluştur
                 classManageList.innerHTML += `
                     <div class="col">
                         <div class="p-2 border rounded d-flex justify-content-between align-items-center bg-light shadow-sm">
@@ -129,71 +138,36 @@
                         </div>
                     </div>`;
             });
-        } catch (err) { console.error("Sınıf yükleme hatası", err); }
-    }
-
-    async function saveClass() {
-        const className = document.getElementById('className').value.trim();
-        const teacherName = document.getElementById('teacherName').value.trim();
-        if(!className) return alert("Sınıf adı boş olamaz!");
-
-        const res = await fetch('/api/classes', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ className, teacherName }) 
-        });
-        
-        const result = await res.json();
-        if(res.ok) { 
-            alert("✅ Sınıf başarıyla eklendi!"); 
-            location.reload(); 
-        } else {
-            alert("⚠️ Hata: " + (result.error || "Sınıf kaydedilemedi."));
+        } catch (err) { 
+            console.error("Sınıf yükleme hatası detay:", err); 
         }
     }
 
-    async function editClass(id, currentTeacher) {
-        const newTeacher = prompt("Yeni öğretmen ismini giriniz:", currentTeacher);
-        if(!newTeacher || newTeacher.trim() === currentTeacher) return;
-
-        const res = await fetch(`/api/classes/${id}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ teacherName: newTeacher.trim() })
-        });
-
-        if(res.ok) {
-            alert("✅ Öğretmen ismi güncellendi!");
-            loadClasses();
-        }
-    }
-
-    async function deleteClass(id, name) {
-        if(!confirm(`"${name}" sınıfını silmek istediğinize emin misiniz? Öğrenciler sınıfsız kalacaktır.`)) return;
-        const res = await fetch(`/api/classes/${id}`, { method: 'DELETE' });
-        if(res.ok) loadInitialData();
-    }
-
-    // --- ÖĞRENCİ İŞLEMLERİ ---
     async function loadManageStudents() {
         const listContainer = document.getElementById('manageStudentList');
         try {
             const res = await fetch('/api/students/all');
+            if(!res.ok) throw new Error("Sunucu hatası: " + res.status);
+            
             allStudents = await res.json();
             renderStudentList(allStudents);
-        } catch (err) { listContainer.innerHTML = "Öğrenciler yüklenemedi."; }
+        } catch (err) { 
+            console.error("Öğrenci yüklenirken hata oluştu:", err);
+            listContainer.innerHTML = `<div class="text-center text-danger p-3">Veriler çekilemedi: ${err.message}</div>`; 
+        }
     }
 
     function renderStudentList(students) {
         const listContainer = document.getElementById('manageStudentList');
         listContainer.innerHTML = '';
 
-        if(students.length === 0) {
-            listContainer.innerHTML = '<p class="text-center py-3 text-muted">Öğrenci bulunamadı.</p>';
+        if(!students || students.length === 0) {
+            listContainer.innerHTML = '<p class="text-center py-3 text-muted">Henüz kayıtlı öğrenci yok.</p>';
             return;
         }
 
         students.forEach(s => {
+            // Sınıf seçeneklerini oluştur
             let options = allClasses.map(c => 
                 `<option value="${c._id}" ${c._id === s.currentClass ? 'selected' : ''}>${c.className}</option>`
             ).join('');
@@ -207,7 +181,7 @@
                         <div class="col-md-5">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-transparent border-0 small text-muted">Sınıf:</span>
-                                <select class="form-select form-select-sm border-0 bg-light" onchange="changeStudentClass('${s._id}', this.value)">
+                                <select class="form-select form-select-sm border-0 bg-light rounded" onchange="changeStudentClass('${s._id}', this.value)">
                                     ${options}
                                 </select>
                             </div>
@@ -222,6 +196,7 @@
         });
     }
 
+    // --- DİĞER FONKSİYONLAR (Aynı Kalabilir) ---
     async function saveStudent() {
         const data = {
             firstName: document.getElementById('stuFirstName').value.trim(),
@@ -247,17 +222,33 @@
 
     async function changeStudentClass(sId, cId) {
         try {
-            const res = await fetch(`/api/students/${sId}`, {
+            await fetch(`/api/students/${sId}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ currentClass: cId })
             });
-            if(!res.ok) alert("Sınıf değiştirilemedi.");
-        } catch (err) { console.error(err); }
+        } catch (err) { console.error("Sınıf değiştirme hatası:", err); }
+    }
+
+    async function editClass(id, currentTeacher) {
+        const newTeacher = prompt("Yeni öğretmen ismini giriniz:", currentTeacher);
+        if(!newTeacher || newTeacher.trim() === currentTeacher) return;
+        const res = await fetch(`/api/classes/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ teacherName: newTeacher.trim() })
+        });
+        if(res.ok) { alert("✅ Güncellendi!"); loadClasses(); }
+    }
+
+    async function deleteClass(id, name) {
+        if(!confirm(`"${name}" sınıfını silmek istediğinize emin misiniz?`)) return;
+        const res = await fetch(`/api/classes/${id}`, { method: 'DELETE' });
+        if(res.ok) loadInitialData();
     }
 
     async function deleteStudent(id, name) {
-        if(!confirm(`${name} isimli öğrenciyi SİLECEKSİNİZ. Bu işlem geri alınamaz!`)) return;
+        if(!confirm(`${name} silinecek. Onaylıyor musunuz?`)) return;
         const res = await fetch(`/api/students/${id}`, { method: 'DELETE' });
         if(res.ok) loadManageStudents();
     }
@@ -268,24 +259,31 @@
         renderStudentList(filtered);
     }
 
-    // --- MATERYAL İŞLEMLERİ ---
     async function saveLesson() {
         const lessonName = document.getElementById('lessonName').value.trim();
         const area = document.getElementById('lessonArea').value;
         if(!lessonName) return alert("Materyal adı boş olamaz!");
-
         const res = await fetch('/api/lessons', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ lessonName, area })
         });
+        if(res.ok) { alert("✅ Eklendi"); document.getElementById('lessonName').value = ""; }
+        else { const r = await res.json(); alert("⚠️ " + r.error); }
+    }
+
+    async function saveClass() {
+        const className = document.getElementById('className').value.trim();
+        const teacherName = document.getElementById('teacherName').value.trim();
+        if(!className) return alert("Sınıf adı boş olamaz!");
+        const res = await fetch('/api/classes', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ className, teacherName }) 
+        });
         const result = await res.json();
-        if(res.ok) {
-            alert("✅ Materyal başarıyla eklendi.");
-            document.getElementById('lessonName').value = "";
-        } else {
-            alert("⚠️ Hata: " + (result.error || "Materyal eklenemedi."));
-        }
+        if(res.ok) { alert("✅ Sınıf eklendi!"); location.reload(); }
+        else { alert("⚠️ " + result.error); }
     }
 </script>
 </body>
