@@ -156,46 +156,45 @@
             listContainer.innerHTML = `<div class="text-center text-danger p-3">Veriler çekilemedi: ${err.message}</div>`; 
         }
     }
+function renderStudentList(students) {
+    const listContainer = document.getElementById('manageStudentList');
+    listContainer.innerHTML = '';
 
-    function renderStudentList(students) {
-        const listContainer = document.getElementById('manageStudentList');
-        listContainer.innerHTML = '';
-
-        if(!students || students.length === 0) {
-            listContainer.innerHTML = '<p class="text-center py-3 text-muted">Henüz kayıtlı öğrenci yok.</p>';
-            return;
-        }
-
-        students.forEach(s => {
-            // Sınıf seçeneklerini oluştur
-            let options = allClasses.map(c => 
-                `<option value="${c._id}" ${c._id === s.currentClass ? 'selected' : ''}>${c.className}</option>`
-            ).join('');
-
-            listContainer.innerHTML += `
-                <div class="list-group-item student-manage-item px-2 py-3">
-                    <div class="row align-items-center">
-                        <div class="col-md-4">
-                            <h6 class="mb-0 fw-bold">${s.firstName} ${s.lastName}</h6>
-                        </div>
-                        <div class="col-md-5">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-transparent border-0 small text-muted">Sınıf:</span>
-                                <select class="form-select form-select-sm border-0 bg-light rounded" onchange="changeStudentClass('${s._id}', this.value)">
-                                    ${options}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3 text-end">
-                            <button onclick="deleteStudent('${s._id}', '${s.firstName}')" class="btn btn-sm text-danger border-0">
-                                <i class="fas fa-user-slash"></i> Sil
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-        });
+    if(!students || students.length === 0) {
+        listContainer.innerHTML = '<p class="text-center py-3 text-muted">Henüz kayıtlı öğrenci yok.</p>';
+        return;
     }
 
+    students.forEach(s => {
+        let options = allClasses.map(c => 
+            `<option value="${c._id}" ${c._id === s.currentClass ? 'selected' : ''}>${c.className}</option>`
+        ).join('');
+
+        const fullName = `${s.firstName} ${s.lastName}`;
+
+        listContainer.innerHTML += `
+            <div class="list-group-item student-manage-item px-2 py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <h6 class="mb-0 fw-bold">${fullName}</h6>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-transparent border-0 small text-muted">Sınıf:</span>
+                            <select class="form-select form-select-sm border-0 bg-light rounded" onchange="changeStudentClass('${s._id}', this.value, '${fullName}')">
+                                ${options}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <button onclick="deleteStudent('${s._id}', '${s.firstName}')" class="btn btn-sm text-danger border-0">
+                            <i class="fas fa-user-slash"></i> Sil
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+    });
+}
     // --- DİĞER FONKSİYONLAR (Aynı Kalabilir) ---
     async function saveStudent() {
         const data = {
@@ -214,19 +213,17 @@
         const result = await res.json();
         if(res.ok) { 
             alert("✅ Öğrenci kaydedildi."); 
-            location.reload(); 
+           loadManageStudents()
         } else {
             alert("⚠️ Hata: " + (result.error || "Öğrenci kaydedilemedi."));
         }
     }
 // settings.html içindeki sınıf değiştirme fonksiyonun muhtemelen şuna benziyor:
 async function changeStudentClass(studentId, newClassId, studentName) {
-    // 1. TEYİT AŞAMASI: Kullanıcıya soralım
     const confirmChange = confirm(`${studentName} isimli öğrencinin sınıfını değiştirmek istediğinize emin misiniz?`);
     
     if (!confirmChange) {
-        // Eğer kullanıcı vazgeçerse sayfayı yenile ki dropdown eski haline dönsün
-        loadStudents(); 
+        loadManageStudents(); // loadStudents değil, sendeki adı loadManageStudents
         return;
     }
 
@@ -238,18 +235,22 @@ async function changeStudentClass(studentId, newClassId, studentName) {
         });
 
         if (res.ok) {
-            // 2. BİLGİLENDİRME AŞAMASI: Başarı mesajı
-            alert("Sınıf başarıyla güncellendi! ✨");
-            loadStudents(); // Listeyi tazele
+            alert("✅ Sınıf başarıyla güncellendi! ✨");
+            // Buraya dikkat: İşlem bitince fonksiyondan çıkıyoruz (return)
+            loadManageStudents(); 
+            return;
         } else {
-            alert("Güncelleme sırasında bir hata oluştu.");
+            const errData = await res.json();
+            alert("⚠️ Hata: " + (errData.error || "Güncelleme yapılamadı."));
         }
     } catch (err) {
         console.error("Hata:", err);
-        alert("Bağlantı hatası!");
+        alert("🚨 Bağlantı hatası!");
     }
 }
-    async function editClass(id, currentTeacher) {
+
+
+async function editClass(id, currentTeacher) {
         const newTeacher = prompt("Yeni öğretmen ismini giriniz:", currentTeacher);
         if(!newTeacher || newTeacher.trim() === currentTeacher) return;
         const res = await fetch(`/api/classes/${id}`, {
@@ -301,7 +302,7 @@ async function changeStudentClass(studentId, newClassId, studentName) {
             body: JSON.stringify({ className, teacherName }) 
         });
         const result = await res.json();
-        if(res.ok) { alert("✅ Sınıf eklendi!"); location.reload(); }
+        if(res.ok) { alert("✅ Sınıf eklendi!"); loadClasses(); }
         else { alert("⚠️ " + result.error); }
     }
 </script>

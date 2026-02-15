@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
@@ -47,8 +47,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="modalBodyContent">
+                <select class="form-select mb-2" id="areaSelect" onchange="filterLessonsByArea()" style="border-radius: 12px; padding: 12px; background-color: #f8f9fa;">
+                    <option selected disabled>Alan Seçin...</option>
+                    <option value="Günlük Yaşam">Günlük Yaşam</option>
+                    <option value="Duyusal">Duyusal</option>
+                    <option value="Matematik">Matematik</option>
+                    <option value="Dil">Dil</option>
+                    <option value="Kültür">Kültür</option>
+                </select>
+
                 <select class="form-select mb-3" id="lessonList" style="border-radius: 12px; padding: 12px;">
-                    <option selected disabled>Çalışma Seçin...</option>
+                    <option selected disabled>Önce Alan Seçiniz...</option>
                 </select>
                 
                 <div class="status-buttons">
@@ -65,6 +74,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+let allLessons = []; 
+let activeStudentId = null;
+
 document.addEventListener('DOMContentLoaded', loadClasses);
 
 async function loadClasses() {
@@ -103,7 +115,6 @@ async function loadStudents(classId) {
 
         students.forEach(s => {
             const initials = (s.firstName[0] || '') + (s.lastName[0] || '');
-            // Backend'den gelen 'ageInMonths' virtual alanını kullanıyoruz
             const ageDisplay = s.ageInMonths !== null ? s.ageInMonths : '?';
             
             container.innerHTML += `
@@ -121,39 +132,59 @@ async function loadStudents(classId) {
     } catch (err) { container.innerHTML = '<p class="text-center mt-5">Hata: Öğrenciler yüklenemedi.</p>'; }
 }
 
-let activeStudentId = null;
-
 async function openObservation(id, name) {
     activeStudentId = id;
     document.getElementById('selectedStudentName').innerText = name;
     
-    // Materyalleri yükle
-    const lessonRes = await fetch('/api/lessons'); // Henüz bu API'yi yazmadık ama hazırlığını yapalım
-    const lessons = await lessonRes.json();
-    const lessonSelect = document.getElementById('lessonList');
-    lessonSelect.innerHTML = '<option selected disabled>Çalışma Seçin...</option>';
-    lessons.forEach(l => {
-        lessonSelect.innerHTML += `<option value="${l._id}">${l.lessonName}</option>`;
-    });
+    try {
+        const lessonRes = await fetch('/api/lessons');
+        allLessons = await lessonRes.json();
+        
+        // Seçimleri sıfırla
+        document.getElementById('areaSelect').selectedIndex = 0;
+        document.getElementById('lessonList').innerHTML = '<option selected disabled>Önce Alan Seçiniz...</option>';
+        document.getElementById('obsNote').value = '';
 
-    const myModal = new bootstrap.Modal(document.getElementById('observationModal'));
-    myModal.show();
+        const myModal = new bootstrap.Modal(document.getElementById('observationModal'));
+        myModal.show();
+    } catch (err) {
+        console.error("Dersler yüklenemedi:", err);
+    }
 }
 
-// Şimdilik sadece konsola basar, bir sonraki adımda kaydedeceğiz
+function filterLessonsByArea() {
+    const selectedArea = document.getElementById('areaSelect').value;
+    const lessonSelect = document.getElementById('lessonList');
+    
+    const filtered = allLessons.filter(l => l.area === selectedArea);
+    
+    lessonSelect.innerHTML = '<option selected disabled>Çalışma Seçin...</option>';
+    
+    if (filtered.length === 0) {
+        lessonSelect.innerHTML = '<option disabled>Bu alanda henüz çalışma yok.</option>';
+    } else {
+        filtered.forEach(l => {
+            const opt = document.createElement('option');
+            opt.value = l._id;
+            opt.innerText = l.lessonName;
+            lessonSelect.appendChild(opt);
+        });
+    }
+}
+
 async function saveQuickObservation(status) {
     const lessonId = document.getElementById('lessonList').value;
-    const noteContent = document.getElementById('obsNote').value; // Formdan gelen not
+    const noteContent = document.getElementById('obsNote').value;
     
-    if(!lessonId) return alert("Lütfen önce bir çalışma seçin!");
+    if(!lessonId || lessonId === "Önce Alan Seçiniz...") return alert("Lütfen önce bir çalışma seçin!");
 
     const data = {
         student: activeStudentId,
         lesson: lessonId,
-        status: status, // 'Sunuldu', 'Çalışıyor' vb.
-        teacherName: "Admin Öğretmen", // Modelindeki teacherName alanı
-        note: noteContent, // Modelindeki note alanı
-        observationDate: new Date() // Okul sahibinin istediği tarih damgası
+        status: status,
+        teacherName: "Admin Öğretmen", 
+        note: noteContent,
+        observationDate: new Date()
     };
 
     try {
@@ -165,9 +196,7 @@ async function saveQuickObservation(status) {
 
         if(res.ok) {
             alert("Gözlem başarıyla kaydedildi! ✨");
-            // Modalı kapat ve temizle
             bootstrap.Modal.getInstance(document.getElementById('observationModal')).hide();
-            document.getElementById('obsNote').value = '';
         } else {
             const errData = await res.json();
             alert("Hata: " + errData.error);
