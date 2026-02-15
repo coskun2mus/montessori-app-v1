@@ -98,22 +98,27 @@ app.post('/api/lessons', async (req, res) => {
 
 // 3. ÖĞRENCİLER
 // Belirli bir sınıfa göre öğrenciler
-app.get('/api/students/:classId', async (req, res) => {
-    try {
-        const students = await Student.find({ currentClass: req.params.classId });
-        res.json(students);
-    } catch (err) {
-        res.status(500).json({ error: "Öğrenciler getirilemedi" });
-    }
-});
+// --- 3. ÖĞRENCİLER ---
 
-// Yönetim Paneli için TÜM öğrenciler (İstediğin eksik buydu)
+// ÖNCE BUNU KOY (Sabit rotalar her zaman üstte olmalı)
 app.get('/api/students/all', async (req, res) => {
     try {
         const students = await Student.find().sort({ firstName: 1 });
         res.json(students);
     } catch (err) {
+        console.error("Tüm öğrenciler çekilirken hata:", err);
         res.status(500).json({ error: "Öğrenci listesi alınamadı." });
+    }
+});
+
+// SONRA BUNU KOY (Değişkenli/Parametreli rotalar altta olmalı)
+app.get('/api/students/:classId', async (req, res) => {
+    try {
+        // Eğer classId bir MongoDB ID formatında değilse catch bloğuna düşer
+        const students = await Student.find({ currentClass: req.params.classId });
+        res.json(students);
+    } catch (err) {
+        res.status(500).json({ error: "Sınıf öğrencileri getirilemedi" });
     }
 });
 
