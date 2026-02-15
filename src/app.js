@@ -186,15 +186,26 @@ app.delete('/api/students/:id', async (req, res) => {
     }
 });
 // Materyal Güncelleme
+// Materyal Güncelleme
 app.put('/api/lessons/:id', async (req, res) => {
-    await Lesson.findByIdAndUpdate(req.params.id, req.body);
-    res.json({ message: "Güncellendi" });
+    try {
+        const updatedLesson = await Lesson.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedLesson) return res.status(404).json({ error: "Materyal bulunamadı." });
+        res.json({ message: "Güncellendi", data: updatedLesson });
+    } catch (err) {
+        res.status(500).json({ error: "Güncelleme sırasında bir hata oluştu." });
+    }
 });
 
 // Materyal Silme
 app.delete('/api/lessons/:id', async (req, res) => {
-    await Lesson.findByIdAndDelete(req.params.id);
-    res.json({ message: "Silindi" });
+    try {
+        const deletedLesson = await Lesson.findByIdAndDelete(req.params.id);
+        if (!deletedLesson) return res.status(404).json({ error: "Materyal zaten mevcut değil." });
+        res.json({ message: "Silindi" });
+    } catch (err) {
+        res.status(500).json({ error: "Silme sırasında bir hata oluştu." });
+    }
 });
 // 4. GÖZLEMLER
 app.post('/api/observations', async (req, res) => {
@@ -205,7 +216,20 @@ app.post('/api/observations', async (req, res) => {
         res.status(400).json({ error: "Gözlem kaydedilemedi.", details: err.message });
     }
 });
-
+// app.js içine ekle
+app.get('/api/observations/student/:studentId', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;
+        // Gözlemleri bul, ders bilgisiyle (populate) birleştir ve tarihe göre tersten sırala
+        const observations = await Observation.find({ student: req.params.studentId })
+            .populate('lesson') 
+            .sort({ observationDate: -1 })
+            .limit(limit);
+        res.json(observations);
+    } catch (err) {
+        res.status(500).json({ error: "Gözlem geçmişi alınamadı." });
+    }
+});
 // SUNUCU BAŞLATMA
 const port = process.env.PORT || 8080;
 app.listen(port, () => {

@@ -47,6 +47,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="modalBodyContent">
+                <div id="lastObservations" class="mb-3 p-2 rounded bg-light border" style="font-size: 0.85rem; display:none;">
+    <div class="fw-bold text-muted mb-1"><i class="fas fa-history me-1"></i> Son Çalışmalar:</div>
+    <div id="obsHistoryContent">
+        </div>
+</div>
                 <select class="form-select mb-2" id="areaSelect" onchange="filterLessonsByArea()" style="border-radius: 12px; padding: 12px; background-color: #f8f9fa;">
                     <option selected disabled>Alan Seçin...</option>
                     <option value="Günlük Yaşam">Günlük Yaşam</option>
@@ -131,16 +136,33 @@ async function loadStudents(classId) {
         });
     } catch (err) { container.innerHTML = '<p class="text-center mt-5">Hata: Öğrenciler yüklenemedi.</p>'; }
 }
-
 async function openObservation(id, name) {
     activeStudentId = id;
     document.getElementById('selectedStudentName').innerText = name;
     
+    // Son gözlemleri çek
     try {
+        const historyRes = await fetch(`/api/observations/student/${id}?limit=3`);
+        const history = await historyRes.json();
+        const historyDiv = document.getElementById('lastObservations');
+        const content = document.getElementById('obsHistoryContent');
+
+        if (history.length > 0) {
+            historyDiv.style.display = 'block';
+            content.innerHTML = history.map(obs => `
+                <div class="d-flex justify-content-between border-bottom py-1">
+                    <span><strong>${obs.lesson.lessonName}</strong></span>
+                    <span class="badge ${getStatusColor(obs.status)}">${obs.status}</span>
+                </div>
+            `).join('');
+        } else {
+            historyDiv.style.display = 'none';
+        }
+
+        // Mevcut materyal yükleme kodların buranın altında devam etsin...
         const lessonRes = await fetch('/api/lessons');
         allLessons = await lessonRes.json();
         
-        // Seçimleri sıfırla
         document.getElementById('areaSelect').selectedIndex = 0;
         document.getElementById('lessonList').innerHTML = '<option selected disabled>Önce Alan Seçiniz...</option>';
         document.getElementById('obsNote').value = '';
@@ -148,10 +170,17 @@ async function openObservation(id, name) {
         const myModal = new bootstrap.Modal(document.getElementById('observationModal'));
         myModal.show();
     } catch (err) {
-        console.error("Dersler yüklenemedi:", err);
+        console.error("Veriler yüklenemedi:", err);
     }
 }
 
+// Durum renkleri için yardımcı fonksiyon
+function getStatusColor(status) {
+    if (status === 'Sunuldu') return 'bg-info';
+    if (status === 'Çalışıyor') return 'bg-warning text-dark';
+    if (status === 'Ustalaştı') return 'bg-success';
+    return 'bg-secondary';
+}
 function filterLessonsByArea() {
     const selectedArea = document.getElementById('areaSelect').value;
     const lessonSelect = document.getElementById('lessonList');
