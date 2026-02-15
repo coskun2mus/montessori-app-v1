@@ -37,7 +37,8 @@
                 <button onclick="saveStudent()" class="btn btn-warning w-100 mt-3 text-white fw-bold shadow-sm">Kaydı Tamamla</button>
             </div>
         </div>
-
+<div class="col-12"><label class="small fw-bold">Okula Başlangıç Tarihi</label><input type="date" id="stuStartDate" class="form-control"></div>
+<div class="col-12"><label class="small fw-bold">Özel Notlar (Opsiyonel)</label><textarea id="stuNote" class="form-control" rows="2" placeholder="Alerji, özel durum vb..."></textarea></div>
         <div class="col-12 col-lg-6">
             <div class="card admin-card p-4 border-start border-success border-5 mb-3">
                 <h5 class="mb-3 text-success fw-bold"><i class="fas fa-door-open me-2"></i>Sınıf Tanımla</h5>
@@ -196,29 +197,80 @@ function renderStudentList(students) {
     });
 }
     // --- DİĞER FONKSİYONLAR (Aynı Kalabilir) ---
-    async function saveStudent() {
-        const data = {
-            firstName: document.getElementById('stuFirstName').value.trim(),
-            lastName: document.getElementById('stuLastName').value.trim(),
-            birthDate: document.getElementById('stuBirthDate').value,
-            currentClass: document.getElementById('stuClass').value
-        };
-        if(!data.firstName || !data.currentClass || !data.birthDate) return alert("Lütfen tüm zorunlu alanları doldurun!");
-        
+async function saveStudent() {
+    // Inputlardan verileri çekiyoruz
+    const data = {
+        firstName: document.getElementById('stuFirstName').value.trim(),
+        lastName: document.getElementById('stuLastName').value.trim(),
+        birthDate: document.getElementById('stuBirthDate').value,
+        enrollmentDate: document.getElementById('stuStartDate').value, // Modeldeki enrollmentDate ile eşleşti
+        notes: document.getElementById('stuNote').value.trim(),         // Modeldeki notes ile eşleşti
+        currentClass: document.getElementById('stuClass').value
+    };
+
+    // Zorunlu alan kontrolü (Hata almamak için)
+    if(!data.firstName || !data.lastName || !data.birthDate || !data.enrollmentDate || !data.currentClass) {
+        return alert("Lütfen zorunlu alanları doldurun: Ad, Soyad, Doğum Tarihi, Başlangıç Tarihi ve Sınıf.");
+    }
+
+    try {
         const res = await fetch('/api/students', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
+
         const result = await res.json();
+
         if(res.ok) { 
-            alert("✅ Öğrenci kaydedildi."); 
-           loadManageStudents()
+            alert("✅ Öğrenci başarıyla kaydedildi."); 
+            
+            // Formu tertemiz yapalım
+            document.getElementById('stuFirstName').value = "";
+            document.getElementById('stuLastName').value = "";
+            document.getElementById('stuBirthDate').value = "";
+            document.getElementById('stuStartDate').value = "";
+            document.getElementById('stuNote').value = "";
+            document.getElementById('stuClass').selectedIndex = 0;
+
+            loadManageStudents(); // Sayfayı yenilemeden listeyi güncelle
         } else {
-            alert("⚠️ Hata: " + (result.error || "Öğrenci kaydedilemedi."));
+            alert("⚠️ Hata: " + (result.error || "Kayıt yapılamadı."));
         }
+    } catch (err) {
+        console.error("Kayıt hatası:", err);
+        alert("🚨 Sunucuya bağlanılamadı.");
     }
-// settings.html içindeki sınıf değiştirme fonksiyonun muhtemelen şuna benziyor:
+}
+    const data = {
+        firstName: document.getElementById('stuFirstName').value.trim(),
+        lastName: document.getElementById('stuLastName').value.trim(),
+        birthDate: document.getElementById('stuBirthDate').value,
+        startDate: document.getElementById('stuStartDate').value, // Yeni
+        notes: document.getElementById('stuNote').value.trim(),   // Yeni
+        currentClass: document.getElementById('stuClass').value
+    };
+    
+    if(!data.firstName || !data.currentClass || !data.birthDate || !data.startDate) {
+        return alert("Lütfen isim, doğum tarihi, başlangıç tarihi ve sınıf alanlarını doldurun!");
+    }
+    
+    const res = await fetch('/api/students', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    
+    if(res.ok) { 
+        alert("✅ Öğrenci tüm bilgileriyle kaydedildi."); 
+        // Formu temizle
+        document.getElementById('stuFirstName').value = "";
+        document.getElementById('stuLastName').value = "";
+        document.getElementById('stuNote').value = "";
+        loadManageStudents(); 
+    }
+}
+    // settings.html içindeki sınıf değiştirme fonksiyonun muhtemelen şuna benziyor:
 async function changeStudentClass(studentId, newClassId, studentName) {
     const confirmChange = confirm(`${studentName} isimli öğrencinin sınıfını değiştirmek istediğinize emin misiniz?`);
     

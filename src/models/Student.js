@@ -15,26 +15,26 @@ const studentSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'Doğum tarihi başarı analizi için kritiktir.']
     },
-    // Okula Başlama Tarihi (Senin özel isteğin)
+    // enrollmentDate: default'u kaldırıp required yapmak daha güvenli olabilir
+    // Çünkü raporlama için bu tarihin net olması lazım.
     enrollmentDate: {
         type: Date,
-        default: Date.now 
+        required: [true, 'Okula başlama tarihi raporlama için zorunludur.']
     },
     gender: {
         type: String,
         enum: ['Kız', 'Erkek', 'Diğer'],
-        required: false // Opsiyonel
+        required: false 
     },
     currentClass: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Class', 
         required: [true, 'Öğrenci mutlaka bir sınıfa atanmalıdır.']
     },
-    // Opsiyonel Not Alanı (Senin özel isteğin)
     notes: {
         type: String,
         trim: true,
-        default: "" // Boş bırakılabilir
+        default: "" 
     },
     status: {
         type: String,
@@ -47,16 +47,24 @@ const studentSchema = new mongoose.Schema({
     toObject: { virtuals: true } 
 });
 
-// Aynı sınıfa aynı isim-soyisimle mükerrer kaydı engeller
+// Mükerrer Kayıt Koruması
 studentSchema.index({ firstName: 1, lastName: 1, birthDate: 1 }, { unique: true });
 
-// Yaş hesaplama (Virtual)
+// Yaş hesaplama (Ay olarak)
 studentSchema.virtual('ageInMonths').get(function() {
     if (!this.birthDate) return null;
     const now = new Date();
     const birth = new Date(this.birthDate);
-    const months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
-    return months >= 0 ? months : 0;
+    return (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+});
+
+// OKULDA GEÇİRDİĞİ SÜRE (Yeni Virtual - Raporlar için çok işine yarayacak)
+// Çocuğun kaç aydır bu Montessori okulunda olduğunu hesaplar.
+studentSchema.virtual('monthsInSchool').get(function() {
+    if (!this.enrollmentDate) return null;
+    const now = new Date();
+    const start = new Date(this.enrollmentDate);
+    return (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
 });
 
 module.exports = mongoose.model('Student', studentSchema);
