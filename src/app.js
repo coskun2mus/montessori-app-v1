@@ -104,7 +104,15 @@ app.post('/api/students', async (req, res) => {
         res.status(500).json({ error: "Kaydedilirken bir hata oluştu." });
     }
 });
-
+// Tüm öğrencileri getir (Yönetim paneli için)
+app.get('/api/students/all', async (req, res) => {
+    try {
+        const students = await Student.find().sort({ firstName: 1 });
+        res.json(students);
+    } catch (err) {
+        res.status(500).json({ error: "Öğrenciler getirilemedi." });
+    }
+});
 // Tüm Materyalleri Getir (Modal içindeki liste için)
 app.get('/api/lessons', async (req, res) => {
     try {
@@ -139,4 +147,37 @@ app.post('/api/observations', async (req, res) => {
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log(`🚀 Sunucu v1.1.0 hazır! Port: ${port}`);
+});
+
+
+// --- YÖNETİM API ROTALARI ---
+
+// Sınıf Silme (Dikkat: Sınıf silinince öğrenciler boşta kalır)
+app.delete('/api/classes/:id', async (req, res) => {
+    try {
+        await Class.findByIdAndDelete(req.params.id);
+        res.json({ message: "Sınıf başarıyla silindi." });
+    } catch (err) {
+        res.status(500).json({ error: "Sınıf silinemedi." });
+    }
+});
+
+// Öğrenci Silme
+app.delete('/api/students/:id', async (req, res) => {
+    try {
+        await Student.findByIdAndDelete(req.params.id);
+        res.json({ message: "Öğrenci kaydı silindi." });
+    } catch (err) {
+        res.status(500).json({ error: "Öğrenci silinemedi." });
+    }
+});
+
+// Öğrenci Güncelleme (Sınıf değiştirme veya isim düzeltme için)
+app.put('/api/students/:id', async (req, res) => {
+    try {
+        const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedStudent);
+    } catch (err) {
+        res.status(500).json({ error: "Öğrenci bilgileri güncellenemedi." });
+    }
 });

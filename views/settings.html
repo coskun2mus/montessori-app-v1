@@ -3,132 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Montessori - Ayarlar</title>
+    <title>Montessori - Yönetim Paneli</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-   <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .management-list { max-height: 400px; overflow-y: auto; border-radius: 12px; }
+        .student-manage-item { transition: all 0.2s; }
+        .student-manage-item:hover { background-color: #f8f9fa; }
+    </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 800px;">
-    <div class="text-center mb-4">
-        <a href="/" class="btn btn-outline-secondary btn-sm mb-3 shadow-sm px-3">← Panele Dön</a>
-        <h2>Okul Yönetimi</h2>
-        <p class="text-muted small">Sınıf, Materyal ve Öğrenci tanımlamaları</p>
+<div class="container pb-5" style="max-width: 900px;">
+    <div class="text-center mb-4 mt-3">
+        <a href="/" class="btn btn-outline-secondary btn-sm mb-3 shadow-sm px-3">← Ana Panele Dön</a>
+        <h2 class="fw-bold">Okul Yönetim Merkezi</h2>
+        <p class="text-muted">Kayıtlar, Sınıf Değişimleri ve Sistem Ayarları</p>
     </div>
 
-    <div class="row g-3">
-        <div class="col-12">
-            <div class="card admin-card p-4 border-start border-warning border-5">
-                <h5 class="mb-4 text-warning fw-bold"><i class="fas fa-user-plus me-2"></i>Öğrenci Kaydet</h5>
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
+            <div class="card admin-card h-100 p-4 border-start border-warning border-5">
+                <h5 class="mb-4 text-warning fw-bold"><i class="fas fa-user-plus me-2"></i>Yeni Öğrenci</h5>
                 <div class="row g-2">
-                    <div class="col-6">
-                        <label>Ad</label>
-                        <input type="text" id="stuFirstName" class="form-control form-control-lg" placeholder="Örn: Mustafa">
-                    </div>
-                    <div class="col-6">
-                        <label>Soyad</label>
-                        <input type="text" id="stuLastName" class="form-control form-control-lg" placeholder="Örn: Coşkun">
-                    </div>
-   <div class="col-12 col-md-6">
-    <label>Doğum Tarihi</label>
-    <input type="date" id="stuBirthDate" class="form-control form-control-lg" onkeydown="return false">
-</div>
-
-<div class="col-12 col-md-6">
-    <label>Okula Başlama Tarihi</label>
-    <input type="date" id="stuEnrollDate" class="form-control form-control-lg" onkeydown="return false">
-</div>
-                    <div class="col-12">
-                        <label>Atanacağı Sınıf</label>
-                        <select id="stuClass" class="form-select form-select-lg">
-                            <option selected disabled>Sınıf Seçin...</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label>Özel Not (Opsiyonel)</label>
-                        <textarea id="stuNotes" class="form-control form-control-lg" rows="2" placeholder="Öğrenci hakkında kısa not..."></textarea>
-                    </div>
+                    <div class="col-6"><label class="small fw-bold">Ad</label><input type="text" id="stuFirstName" class="form-control" placeholder="Ad"></div>
+                    <div class="col-6"><label class="small fw-bold">Soyad</label><input type="text" id="stuLastName" class="form-control" placeholder="Soyad"></div>
+                    <div class="col-12"><label class="small fw-bold">Doğum Tarihi</label><input type="date" id="stuBirthDate" class="form-control" onkeydown="return false"></div>
+                    <div class="col-12"><label class="small fw-bold">Sınıf Atama</label><select id="stuClass" class="form-select"><option selected disabled>Seçiniz...</option></select></div>
                 </div>
-                <button onclick="saveStudent()" class="btn btn-warning btn-lg w-100 shadow mt-4 text-white">Öğrenciyi Kaydet</button>
+                <button onclick="saveStudent()" class="btn btn-warning w-100 mt-3 text-white fw-bold">Kaydı Tamamla</button>
             </div>
         </div>
 
-        <div class="col-12">
-            <div class="card admin-card p-4 border-start border-success border-5">
+        <div class="col-12 col-lg-6">
+            <div class="card admin-card p-4 border-start border-success border-5 mb-3">
                 <h5 class="mb-3 text-success fw-bold"><i class="fas fa-door-open me-2"></i>Sınıf Tanımla</h5>
-                <input type="text" id="className" class="form-control form-control-lg mb-2" placeholder="Sınıf Adı (Örn: Arılar)">
-                <input type="text" id="teacherName" class="form-control form-control-lg mb-3" placeholder="Sorumlu Öğretmen">
-                <button onclick="saveClass()" class="btn btn-success btn-lg w-100 shadow">Sınıfı Kaydet</button>
+                <div class="d-flex gap-2">
+                    <input type="text" id="className" class="form-control form-control-sm" placeholder="Sınıf Adı">
+                    <input type="text" id="teacherName" class="form-control form-control-sm" placeholder="Öğretmen">
+                    <button onclick="saveClass()" class="btn btn-success btn-sm px-3">Ekle</button>
+                </div>
             </div>
-        </div>
-
-        <div class="col-12">
+            
             <div class="card admin-card p-4 border-start border-primary border-5">
                 <h5 class="mb-3 text-primary fw-bold"><i class="fas fa-cube me-2"></i>Materyal Ekle</h5>
-                <select id="lessonArea" class="form-select form-select-lg mb-2">
-                    <option>Günlük Yaşam</option>
-                    <option>Duyusal</option>
-                    <option>Matematik</option>
-                    <option>Dil</option>
-                    <option>Kültür</option>
-                </select>
-                <input type="text" id="lessonName" class="form-control form-control-lg mb-3" placeholder="Materyal Adı (Örn: Pembe Kule)">
-                <div class="mb-2">
-                    <label>Zorluk (1-10)</label>
-                    <input type="range" id="difficulty" class="form-range" min="1" max="10">
+                <input type="text" id="lessonName" class="form-control form-control-sm mb-2" placeholder="Materyal Adı">
+                <div class="d-flex gap-2">
+                    <select id="lessonArea" class="form-select form-select-sm">
+                        <option>Günlük Yaşam</option><option>Duyusal</option><option>Matematik</option><option>Dil</option><option>Kültür</option>
+                    </select>
+                    <button onclick="saveLesson()" class="btn btn-primary btn-sm px-3">Ekle</button>
                 </div>
-                <button onclick="saveLesson()" class="btn btn-primary btn-lg w-100 shadow">Müfredata Ekle</button>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card admin-card p-4 border-start border-danger border-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-danger fw-bold mb-0"><i class="fas fa-users me-2"></i>Öğrenci Yönetimi</h5>
+                    <input type="text" id="studentSearch" class="form-control form-control-sm w-50" placeholder="Öğrenci Ara..." onkeyup="filterStudents()">
+                </div>
+                <div id="manageStudentList" class="management-list list-group list-group-flush">
+                    <div class="text-center py-4"><div class="spinner-border text-danger"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card admin-card p-4 border-start border-info border-5">
+                <h5 class="mb-3 text-info fw-bold"><i class="fas fa-list me-2"></i>Sınıf Yönetimi</h5>
+                <div id="manageClassList" class="row row-cols-1 row-cols-md-2 g-2">
+                    </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', loadClassesToSelect);
+    let allStudents = [];
+    let allClasses = [];
 
-    async function loadClassesToSelect() {
-        try {
-            const res = await fetch('/api/classes');
-            const classes = await res.json();
-            const select = document.getElementById('stuClass');
-            classes.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c._id;
-                opt.innerText = c.className;
-                select.appendChild(opt);
-            });
-        } catch (err) { console.error("Sınıflar yüklenemedi"); }
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('stuBirthDate').setAttribute('max', today);
+        
+        loadInitialData();
+    });
+
+    async function loadInitialData() {
+        await loadClasses(); // Önce sınıfları yükle ki öğrencilerle eşleşsin
+        loadManageStudents();
     }
 
+    async function loadClasses() {
+        try {
+            const res = await fetch('/api/classes');
+            allClasses = await res.json();
+            
+            // Kayıt dropdown'ını doldur
+            const select = document.getElementById('stuClass');
+            select.innerHTML = '<option selected disabled>Seçiniz...</option>';
+            
+            // Yönetim listesini doldur
+            const classManageList = document.getElementById('manageClassList');
+            classManageList.innerHTML = '';
+
+            allClasses.forEach(c => {
+                // Dropdown
+                const opt = document.createElement('option');
+                opt.value = c._id; opt.innerText = c.className;
+                select.appendChild(opt);
+
+                // Yönetim Kartları
+                classManageList.innerHTML += `
+                    <div class="col">
+                        <div class="p-2 border rounded d-flex justify-content-between align-items-center bg-light">
+                            <span><strong>${c.className}</strong> <small class="text-muted">(${c.teacherName})</small></span>
+                            <button onclick="deleteClass('${c._id}', '${c.className}')" class="btn btn-link text-danger p-0"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            });
+        } catch (err) { console.error("Sınıf yükleme hatası"); }
+    }
+
+    async function loadManageStudents() {
+        const listContainer = document.getElementById('manageStudentList');
+        try {
+            const res = await fetch('/api/students/all');
+            allStudents = await res.json();
+            renderStudentList(allStudents);
+        } catch (err) { listContainer.innerHTML = "Öğrenciler yüklenemedi."; }
+    }
+
+    function renderStudentList(students) {
+        const listContainer = document.getElementById('manageStudentList');
+        listContainer.innerHTML = '';
+
+        students.forEach(s => {
+            let options = allClasses.map(c => 
+                `<option value="${c._id}" ${c._id === s.currentClass ? 'selected' : ''}>${c.className}</option>`
+            ).join('');
+
+            listContainer.innerHTML += `
+                <div class="list-group-item student-manage-item px-0 py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h6 class="mb-0 fw-bold">${s.firstName} ${s.lastName}</h6>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white border-0 small text-muted">Sınıf:</span>
+                                <select class="form-select form-select-sm border-0 bg-light" onchange="changeStudentClass('${s._id}', this.value)">
+                                    ${options}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <button onclick="deleteStudent('${s._id}', '${s.firstName}')" class="btn btn-sm btn-outline-danger border-0">
+                                <i class="fas fa-user-slash"></i> Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function changeStudentClass(sId, cId) {
+        try {
+            const res = await fetch(`/api/students/${sId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ currentClass: cId })
+            });
+            if(res.ok) {
+                // Başarılı uyarısı için geçici bir görsel efekt yapılabilir
+                console.log("Sınıf güncellendi");
+            }
+        } catch (err) { alert("Güncelleme başarısız."); }
+    }
+
+    async function deleteStudent(id, name) {
+        if(!confirm(`${name} isimli öğrenciyi SİLMEK istediğinize emin misiniz?`)) return;
+        const res = await fetch(`/api/students/${id}`, { method: 'DELETE' });
+        if(res.ok) loadManageStudents();
+    }
+
+    async function deleteClass(id, name) {
+        if(!confirm(`${name} sınıfını silerseniz öğrenciler sınıfsız kalacaktır. Onaylıyor musunuz?`)) return;
+        const res = await fetch(`/api/classes/${id}`, { method: 'DELETE' });
+        if(res.ok) loadInitialData();
+    }
+
+    function filterStudents() {
+        const term = document.getElementById('studentSearch').value.toLowerCase();
+        const filtered = allStudents.filter(s => (s.firstName + " " + s.lastName).toLowerCase().includes(term));
+        renderStudentList(filtered);
+    }
+
+    // Mevcut Kayıt Fonksiyonları
     async function saveStudent() {
         const data = {
             firstName: document.getElementById('stuFirstName').value,
             lastName: document.getElementById('stuLastName').value,
             birthDate: document.getElementById('stuBirthDate').value,
-            enrollmentDate: document.getElementById('stuEnrollDate').value || undefined,
-            currentClass: document.getElementById('stuClass').value,
-            notes: document.getElementById('stuNotes').value
+            currentClass: document.getElementById('stuClass').value
         };
-
-        if(!data.firstName || !data.lastName || !data.birthDate || !data.currentClass) {
-            return alert("Lütfen zorunlu alanları (Ad, Soyad, Doğum Tarihi, Sınıf) doldurun!");
-        }
-
+        if(!data.firstName || !data.currentClass) return alert("Eksik bilgi!");
+        
         const res = await fetch('/api/students', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
-        
-        const result = await res.json();
-        if(res.ok) {
-            alert("Öğrenci Başarıyla Kaydedildi!");
-            location.reload();
-        } else {
-            alert("Hata: " + (result.error || "Öğrenci kaydedilemedi."));
-        }
+        if(res.ok) { alert("Kaydedildi"); location.reload(); }
     }
 
     async function saveClass() {
@@ -136,65 +225,26 @@
             className: document.getElementById('className').value, 
             teacherName: document.getElementById('teacherName').value 
         };
-        const res = await fetch('/api/classes', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(data) 
+        const res = await fetch('/api/classes', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
         });
-        const result = await res.json();
-        if(res.ok) { 
-            alert("Sınıf Kaydedildi!"); 
-            location.reload(); 
-        } else {
-            alert("Hata: " + (result.error || "Sınıf kaydedilemedi."));
-        }
+        if(res.ok) location.reload();
     }
 
     async function saveLesson() {
         const data = { 
             area: document.getElementById('lessonArea').value, 
-            lessonName: document.getElementById('lessonName').value, 
-            difficultyLevel: document.getElementById('difficulty').value 
+            lessonName: document.getElementById('lessonName').value 
         };
-        const res = await fetch('/api/lessons', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(data) 
+        const res = await fetch('/api/lessons', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
         });
-        const result = await res.json();
-        if(res.ok) {
-            alert("Materyal Eklendi!");
-            location.reload();
-        } else {
-            alert("Hata: " + (result.error || "Materyal eklenemedi."));
-        }
+        if(res.ok) alert("Materyal eklendi");
     }
-
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. TARİH SINIRLARINI AYARLA
-    const today = new Date().toISOString().split('T')[0];
-    
-    const birthInput = document.getElementById('stuBirthDate');
-    const enrollInput = document.getElementById('stuEnrollDate');
-    
-    if(birthInput) {
-        birthInput.setAttribute('max', today);
-        // 20 yıl öncesi sınırı
-        const minDate = new Date();
-        minDate.setFullYear(minDate.getFullYear() - 20);
-        birthInput.setAttribute('min', minDate.toISOString().split('T')[0]);
-    }
-    
-    if(enrollInput) {
-        enrollInput.setAttribute('max', today);
-    }
-
-    // 2. SINIFLARI YÜKLE (Mevcut fonksiyonun)
-    loadClassesToSelect();
-});
-
-// loadClassesToSelect ve diğer fonksiyonların aşağıda aynen kalsın...    
-
 </script>
 </body>
 </html>
