@@ -45,33 +45,59 @@ app.get('/api/classes', async (req, res) => {
 
 app.post('/api/classes', async (req, res) => {
     try {
-        // Mükerrer Kayıt Kontrolü
         const exists = await Class.findOne({ className: req.body.className });
         if (exists) return res.status(400).json({ error: "Bu isimde bir sınıf zaten var!" });
 
         const newClass = await Class.create(req.body);
-        res.json(newClass);
+        res.status(201).json(newClass);
     } catch (err) {
         res.status(500).json({ error: "Sınıf eklenirken bir hata oluştu." });
     }
 });
 
+// Sınıf Güncelleme (Öğretmen ismi değiştirmek için)
+app.put('/api/classes/:id', async (req, res) => {
+    try {
+        const updatedClass = await Class.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedClass);
+    } catch (err) {
+        res.status(500).json({ error: "Sınıf bilgileri güncellenemedi." });
+    }
+});
+
+app.delete('/api/classes/:id', async (req, res) => {
+    try {
+        await Class.findByIdAndDelete(req.params.id);
+        res.json({ message: "Sınıf başarıyla silindi." });
+    } catch (err) {
+        res.status(500).json({ error: "Sınıf silinemedi." });
+    }
+});
+
 // 2. MATERYALLER (LESSONS)
+app.get('/api/lessons', async (req, res) => {
+    try {
+        const lessons = await Lesson.find().sort({ area: 1, lessonName: 1 });
+        res.json(lessons);
+    } catch (err) {
+        res.status(500).json({ error: "Materyaller getirilemedi" });
+    }
+});
+
 app.post('/api/lessons', async (req, res) => {
     try {
-        // Mükerrer Kayıt Kontrolü
         const exists = await Lesson.findOne({ lessonName: req.body.lessonName });
         if (exists) return res.status(400).json({ error: "Bu materyal zaten müfredatta var!" });
 
         const newLesson = await Lesson.create(req.body);
-        res.json(newLesson);
+        res.status(201).json(newLesson);
     } catch (err) {
         res.status(500).json({ error: "Materyal eklenemedi." });
     }
 });
 
 // 3. ÖĞRENCİLER
-// Sınıfa göre öğrencileri listele (Yaş hesabı Virtual alanla otomatik gelecek)
+// Belirli bir sınıfa göre öğrenciler
 app.get('/api/students/:classId', async (req, res) => {
     try {
         const students = await Student.find({ currentClass: req.params.classId });
@@ -81,12 +107,19 @@ app.get('/api/students/:classId', async (req, res) => {
     }
 });
 
-// Yeni Öğrenci Ekle (Mükerrer kontrolü model seviyesinde yapıldı, burada yakalıyoruz)
+// Yönetim Paneli için TÜM öğrenciler (İstediğin eksik buydu)
+app.get('/api/students/all', async (req, res) => {
+    try {
+        const students = await Student.find().sort({ firstName: 1 });
+        res.json(students);
+    } catch (err) {
+        res.status(500).json({ error: "Öğrenci listesi alınamadı." });
+    }
+});
+
 app.post('/api/students', async (req, res) => {
     try {
         const { firstName, lastName, birthDate } = req.body;
-
-        // Manuel kontrol: Aynı isim, soyisim ve doğum günü var mı?
         const existingStudent = await Student.findOne({ 
             firstName: firstName.trim(), 
             lastName: lastName.trim(), 
@@ -100,69 +133,19 @@ app.post('/api/students', async (req, res) => {
         const newStudent = await Student.create(req.body);
         res.status(201).json(newStudent);
     } catch (err) {
-        console.error("Kayıt hatası:", err);
-        res.status(500).json({ error: "Kaydedilirken bir hata oluştu." });
+        res.status(500).json({ error: "Öğrenci kaydedilirken hata oluştu." });
     }
 });
-// Tüm öğrencileri getir (Yönetim paneli için)
-app.get('/api/students/all', async (req, res) => {
+
+app.put('/api/students/:id', async (req, res) => {
     try {
-        const students = await Student.find().sort({ firstName: 1 });
-        res.json(students);
+        const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedStudent);
     } catch (err) {
-        res.status(500).json({ error: "Öğrenciler getirilemedi." });
-    }
-});
-// Tüm Materyalleri Getir (Modal içindeki liste için)
-app.get('/api/lessons', async (req, res) => {
-    try {
-        const lessons = await Lesson.find().sort({ area: 1, lessonName: 1 });
-        res.json(lessons);
-    } catch (err) {
-        res.status(500).json({ error: "Materyaller getirilemedi" });
+        res.status(500).json({ error: "Öğrenci güncellenemedi." });
     }
 });
 
-// Yeni Gözlem Kaydı Oluştur
-app.post('/api/observations', async (req, res) => {
-    try {
-        // Gelen veriyi kontrol etmek için log (hata ayıklarken hayat kurtarır)
-        console.log("Yeni Gözlem Talebi:", req.body);
-
-        // Veritabanına kayıt
-        const newObservation = await Observation.create(req.body);
-        
-        // Başarılı sonucu dön
-        res.status(201).json(newObservation);
-    } catch (err) {
-        console.error("Gözlem Kayıt Hatası:", err);
-        
-        // Eğer modeldeki 'required' alanlar eksikse burası tetiklenir
-        res.status(400).json({ 
-            error: "Gözlem kaydedilemedi. Lütfen tüm zorunlu alanları (Öğrenci, Materyal, Durum, Öğretmen) kontrol edin.",
-            details: err.message 
-        });
-    }
-});
-const port = process.env.PORT || 8080;
-app.listen(port, () => {
-    console.log(`🚀 Sunucu v1.1.0 hazır! Port: ${port}`);
-});
-
-
-// --- YÖNETİM API ROTALARI ---
-
-// Sınıf Silme (Dikkat: Sınıf silinince öğrenciler boşta kalır)
-app.delete('/api/classes/:id', async (req, res) => {
-    try {
-        await Class.findByIdAndDelete(req.params.id);
-        res.json({ message: "Sınıf başarıyla silindi." });
-    } catch (err) {
-        res.status(500).json({ error: "Sınıf silinemedi." });
-    }
-});
-
-// Öğrenci Silme
 app.delete('/api/students/:id', async (req, res) => {
     try {
         await Student.findByIdAndDelete(req.params.id);
@@ -172,12 +155,18 @@ app.delete('/api/students/:id', async (req, res) => {
     }
 });
 
-// Öğrenci Güncelleme (Sınıf değiştirme veya isim düzeltme için)
-app.put('/api/students/:id', async (req, res) => {
+// 4. GÖZLEMLER
+app.post('/api/observations', async (req, res) => {
     try {
-        const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedStudent);
+        const newObservation = await Observation.create(req.body);
+        res.status(201).json(newObservation);
     } catch (err) {
-        res.status(500).json({ error: "Öğrenci bilgileri güncellenemedi." });
+        res.status(400).json({ error: "Gözlem kaydedilemedi.", details: err.message });
     }
+});
+
+// SUNUCU BAŞLATMA
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+    console.log(`🚀 Sunucu v1.1.0 hazır! Port: ${port}`);
 });
