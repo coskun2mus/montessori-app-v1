@@ -7,82 +7,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --liberum-green: #2e7d32; --liberum-gold: #f9a825; }
-        body { background-color: #fdfcfb; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 70px; }
+        :root { --liberum-green: #2e7d32; }
+        body { background-color: #fdfcfb; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 90px; }
         
-        /* Hero Section - Logoyu Tam Ekran Odak Yapar */
         .hero-banner {
-            position: relative;
-            width: 100%;
-            height: 45vh; /* Ekranın yarısına yakını görsel */
+            position: relative; width: 100%; height: 40vh;
             background: url('logo.png') no-repeat center center;
-            background-size: cover;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            color: white;
+            background-size: cover; display: flex; flex-direction: column;
+            justify-content: flex-end; align-items: center; color: white;
             text-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
-        .hero-overlay {
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
-            width: 100%;
-            padding: 40px 0 20px;
-            text-align: center;
-        }
-        .hero-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 0; letter-spacing: 1px; }
-        .hero-motto { font-style: italic; font-weight: 300; opacity: 0.9; }
+        .hero-overlay { background: linear-gradient(transparent, rgba(0,0,0,0.7)); width: 100%; padding: 30px 0 20px; text-align: center; }
+        .hero-title { font-size: 2rem; font-weight: 700; margin: 0; }
 
-        /* Seçim Alanı */
         .main-container { margin-top: -30px; position: relative; z-index: 10; }
-        .class-picker-box {
-            background: white;
-            border-radius: 25px;
-            padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: 0 auto;
-        }
+        .class-picker-box { background: white; border-radius: 25px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
 
-        /* Buton Stilleri */
-        .btn-liberum { 
-            background-color: var(--liberum-green); 
-            color: white; 
-            border-radius: 50px; 
-            padding: 12px 30px; 
-            font-weight: 600;
-            border: none;
-            transition: all 0.3s;
-        }
-        .btn-liberum:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46,125,50,0.3); color: white; }
+        .btn-liberum { background-color: var(--liberum-green); color: white; border-radius: 50px; padding: 10px 25px; font-weight: 600; border: none; }
+        
+        .student-card { background: white; border-radius: 20px; border: none; transition: 0.2s; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .student-card:active { transform: scale(0.95); }
+        .avatar-circle { width: 45px; height: 45px; background: #e8f5e9; color: var(--liberum-green); display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
 
-        /* Öğrenci Kartları */
-        .student-card {
-            background: white;
-            border-radius: 20px;
-            border: none;
-            transition: 0.3s;
-            cursor: pointer;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        .student-card:hover { transform: scale(1.02); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-        .avatar-circle {
-            width: 50px; height: 50px;
-            background: #e8f5e9; color: var(--liberum-green);
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; font-weight: bold;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 1000; }
+        .nav-item { text-decoration: none; color: #aaa; text-align: center; font-size: 0.75rem; flex: 1; }
+        .nav-item.active { color: var(--liberum-green); font-weight: bold; }
+        .nav-item i { display: block; font-size: 1.3rem; margin-bottom: 2px; }
 
-        /* Alt Navigasyon */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: white; display: flex; justify-content: space-around;
-            padding: 10px 0; border-top: 1px solid #eee; z-index: 1000;
-        }
-        .nav-item { text-decoration: none; color: #aaa; text-align: center; font-size: 0.8rem; flex: 1; }
-        .nav-item i { display: block; font-size: 1.4rem; margin-bottom: 2px; }
-        .nav-item.active { color: var(--liberum-green); }
+        /* Modal Butonları */
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-status { font-size: 0.8rem; font-weight: bold; border-radius: 12px; padding: 10px 5px; }
     </style>
 </head>
 <body>
@@ -90,77 +44,82 @@
 <header class="hero-banner">
     <div class="hero-overlay">
         <h1 class="hero-title">Liberum Montessori Akademia</h1>
-        <p class="hero-motto">"Özgür Düşün, Özgür Ol"</p>
     </div>
 </header>
 
 <div class="container main-container px-3">
     <div class="class-picker-box text-center">
         <div class="dropdown">
-            <button class="btn btn-liberum btn-lg w-100 dropdown-toggle" type="button" id="classBtn" data-bs-toggle="dropdown">
-                <i class="fas fa-chalkboard-teacher me-2"></i>Sınıf Seçiniz
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 w-100" id="classList" style="border-radius: 15px;">
-                </ul>
-        </div>
-        <div id="selectedInfo" class="mt-2 d-none">
-            <span class="badge bg-light text-success rounded-pill px-3 py-2 border">
-                <i class="fas fa-check-circle me-1"></i> <span id="activeName"></span>
-            </span>
+            <button class="btn btn-liberum w-100 dropdown-toggle" type="button" id="classBtn" data-bs-toggle="dropdown">Sınıf Seçiniz</button>
+            <ul class="dropdown-menu shadow border-0 w-100" id="classList" style="border-radius: 15px;"></ul>
         </div>
     </div>
-
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4" id="studentContainer"></div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mt-3" id="studentContainer"></div>
 </div>
 
-<nav class="bottom-nav shadow-lg">
+<nav class="bottom-nav">
     <a href="/" class="nav-item active"><i class="fas fa-th-large"></i>Paneller</a>
     <a href="/ayarlar" class="nav-item"><i class="fas fa-cog"></i>Ayarlar</a>
-    <a href="/raporlar" class="nav-item"><i class="fas fa-chart-pie"></i>Raporlar</a>
+    <a href="#" class="nav-item"><i class="fas fa-chart-pie"></i>Raporlar</a>
 </nav>
 
 <div class="modal fade" id="observationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 30px;">
-            <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="fw-bold" id="selectedStudentName"></h5>
+    <div class="modal-dialog modal-dialog-centered p-3">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header border-0">
+                <h5 class="fw-bold mb-0" id="selectedStudentName"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4" id="modalBody">
+            <div class="modal-body pt-0">
+                <div id="lastObservations" class="mb-3 p-2 rounded bg-light" style="font-size: 0.8rem; display:none;">
+                    <div id="obsHistoryContent"></div>
                 </div>
+
+                <select class="form-select mb-2 rounded-3" id="areaSelect" onchange="filterLessonsByArea()">
+                    <option selected disabled>Alan Seçin...</option>
+                    <option>Günlük Yaşam</option><option>Duyusal</option><option>Matematik</option><option>Dil</option><option>Kültür</option>
+                </select>
+
+                <select class="form-select mb-3 rounded-3" id="lessonList">
+                    <option selected disabled>Önce Alan Seçiniz...</option>
+                </select>
+                
+                <div class="status-grid">
+                    <button class="btn btn-outline-info btn-status" onclick="saveQuickObservation('Sunuldu')">Sunuldu</button>
+                    <button class="btn btn-outline-warning btn-status" onclick="saveQuickObservation('Çalışıyor')">Çalışıyor</button>
+                    <button class="btn btn-outline-success btn-status" onclick="saveQuickObservation('Ustalaştı')">Ustalaştı</button>
+                </div>
+                <textarea class="form-control mt-3 rounded-3" id="obsNote" rows="2" placeholder="Not (Opsiyonel)..."></textarea>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Önceki kodundaki loadClasses ve loadStudents fonksiyonlarını buraya ekle. 
-    // Sadece görsel kimlikleri (ID'leri) yukarıdakilerle eşleştirmen yeterli.
-    
+    let allLessons = [];
+    let activeStudentId = null;
+
     async function loadClasses() {
         const res = await fetch('/api/classes');
         const classes = await res.json();
-        const list = document.getElementById('classList');
-        list.innerHTML = classes.map(c => `
-            <li><a class="dropdown-item py-2" href="#" onclick="selectClass('${c._id}', '${c.className}')">${c.className}</a></li>
-        `).join('');
+        document.getElementById('classList').innerHTML = classes.map(c => 
+            `<li><a class="dropdown-item py-2" href="#" onclick="selectClass('${c._id}', '${c.className}')">${c.className}</a></li>`
+        ).join('');
     }
 
-    async function selectClass(id, name) {
-        document.getElementById('activeName').innerText = name;
-        document.getElementById('selectedInfo').classList.remove('d-none');
+    function selectClass(id, name) {
+        document.getElementById('classBtn').innerText = name;
         loadStudents(id);
     }
 
     async function loadStudents(classId) {
-        const container = document.getElementById('studentContainer');
-        container.innerHTML = '<div class="text-center w-100 p-5"><div class="spinner-border text-success"></div></div>';
         const res = await fetch(`/api/students/${classId}`);
         const students = await res.json();
-        container.innerHTML = students.map(s => `
+        document.getElementById('studentContainer').innerHTML = students.map(s => `
             <div class="col">
                 <div class="student-card p-3 d-flex align-items-center" onclick="openObservation('${s._id}', '${s.firstName} ${s.lastName}')">
-                    <div class="avatar-circle me-3">${(s.firstName[0] || '') + (s.lastName[0] || '')}</div>
+                    <div class="avatar-circle me-3">${s.firstName[0]}${s.lastName[0]}</div>
                     <div>
                         <h6 class="mb-0 fw-bold">${s.firstName} ${s.lastName}</h6>
                         <small class="text-muted">${s.ageInMonths || '?'} Aylık</small>
@@ -168,6 +127,54 @@
                 </div>
             </div>
         `).join('');
+    }
+
+    async function openObservation(id, name) {
+        activeStudentId = id;
+        document.getElementById('selectedStudentName').innerText = name;
+        
+        // Son gözlemleri çek
+        const historyRes = await fetch(`/api/observations/student/${id}?limit=3`);
+        const history = await historyRes.json();
+        const historyDiv = document.getElementById('lastObservations');
+        if (history.length > 0) {
+            historyDiv.style.display = 'block';
+            document.getElementById('obsHistoryContent').innerHTML = history.map(obs => 
+                `<div class="d-flex justify-content-between"><span>${obs.lesson.lessonName}</span><span class="badge bg-secondary">${obs.status}</span></div>`
+            ).join('');
+        } else { historyDiv.style.display = 'none'; }
+
+        const lessonRes = await fetch('/api/lessons');
+        allLessons = await lessonRes.json();
+        
+        document.getElementById('areaSelect').selectedIndex = 0;
+        document.getElementById('lessonList').innerHTML = '<option disabled selected>Önce Alan Seçiniz...</option>';
+        new bootstrap.Modal(document.getElementById('observationModal')).show();
+    }
+
+    function filterLessonsByArea() {
+        const area = document.getElementById('areaSelect').value;
+        const filtered = allLessons.filter(l => l.area === area);
+        document.getElementById('lessonList').innerHTML = filtered.map(l => `<option value="${l._id}">${l.lessonName}</option>`).join('');
+    }
+
+    async function saveQuickObservation(status) {
+        const lessonId = document.getElementById('lessonList').value;
+        if(!lessonId || lessonId.includes("Seçiniz")) return alert("Lütfen çalışma seçin!");
+        
+        const res = await fetch('/api/observations', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                student: activeStudentId, lesson: lessonId, status: status,
+                note: document.getElementById('obsNote').value, observationDate: new Date()
+            })
+        });
+
+        if(res.ok) {
+            alert("Kaydedildi!");
+            bootstrap.Modal.getInstance(document.getElementById('observationModal')).hide();
+        }
     }
 
     document.addEventListener('DOMContentLoaded', loadClasses);
