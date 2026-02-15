@@ -185,7 +185,17 @@ app.delete('/api/students/:id', async (req, res) => {
         res.status(500).json({ error: "Öğrenci silinemedi." });
     }
 });
+// Materyal Güncelleme
+app.put('/api/lessons/:id', async (req, res) => {
+    await Lesson.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ message: "Güncellendi" });
+});
 
+// Materyal Silme
+app.delete('/api/lessons/:id', async (req, res) => {
+    await Lesson.findByIdAndDelete(req.params.id);
+    res.json({ message: "Silindi" });
+});
 // 4. GÖZLEMLER
 app.post('/api/observations', async (req, res) => {
     try {
