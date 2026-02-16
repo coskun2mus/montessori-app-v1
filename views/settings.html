@@ -272,30 +272,7 @@ async function loadManageLessons() {
         });
     } catch (err) { console.error("Hata:", err); }
 }
-        const listContainer = document.getElementById('manageLessonList');
-        const filterArea = document.getElementById('filterArea').value;
-        try {
-            const res = await fetch('/api/lessons');
-            let lessons = await res.json();
-            if(filterArea !== "Hepsi") lessons = lessons.filter(l => l.area === filterArea);
-
-            listContainer.innerHTML = '';
-            lessons.forEach(l => {
-                listContainer.innerHTML += `
-                    <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-                        <div>
-                            <span class="badge bg-light text-primary me-2">${l.area}</span>
-                            <span class="fw-bold small">${l.lessonName} <small class="text-muted">(Zorluk: ${l.difficultyLevel || 1})</small></span>
-                        </div>
-                        <div>
-                            <button onclick="editLesson('${l._id}', '${l.lessonName}')" class="btn btn-link text-primary p-0 me-2"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteLesson('${l._id}', '${l.lessonName}')" class="btn btn-link text-danger p-0"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
-            });
-        } catch (err) { console.error("Hata:", err); }
-    }
-async function editLesson(id, oldName) {
+    async function editLesson(id, oldName) {
     const newName = prompt("Materyal ismini güncelle:", oldName);
     if (!newName) return;
 
