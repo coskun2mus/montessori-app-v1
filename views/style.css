@@ -12,7 +12,7 @@ body {
     font-family: 'Poppins', sans-serif;
     color: var(--liberum-dark);
     margin: 0;
-    padding-bottom: 120px; /* Navigasyon için boşluk */
+    padding-bottom: 140px; /* Navigasyonun üzerine binmemesi için biraz daha artırıldı */
 }
 
 /* --- HERO BÖLÜMÜ --- */
@@ -39,13 +39,13 @@ body {
     line-height: 1.2;
 }
 
-/* --- SINIF SEÇİMİ --- */
+/* --- SINIF SEÇİMİ (MOBİL DÜZELTMELİ) --- */
 .selection-container {
     max-width: 500px;
     margin: -40px auto 40px;
     padding: 0 20px;
     position: relative;
-    z-index: 1000;
+    z-index: 2001; /* Navigasyonun üzerinde kalması için */
 }
 
 .btn-class-selector {
@@ -61,7 +61,17 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Dropdown İsim Düzenlemesi (Mobil Çakışma Önleyici) */
+/* Mobilde listenin kaydırılabilir olması ve alt menüye takılmaması için */
+.dropdown-menu {
+    max-height: 300px; /* Sınıflar çoksa kaydırma çubuğu çıkar */
+    overflow-y: auto;
+    width: 100%;
+    border-radius: 25px !important;
+    padding: 10px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    -webkit-overflow-scrolling: touch; /* iOS kaydırma akıcılığı */
+}
+
 .class-item-content {
     display: flex;
     flex-direction: column;
@@ -72,14 +82,50 @@ body {
     font-weight: 700;
     color: var(--liberum-green);
     font-size: 1.1rem;
-    margin-bottom: 2px;
 }
 
 .teacher-name {
     color: #7f8c8d;
     font-size: 0.85rem;
-    font-weight: 400;
 }
+
+/* --- AYARLAR: MATERYAL LİSTESİ DÜZENLEME --- */
+/* Bu bölüm ikonların kaymasını ve hizasızlığını çözer */
+.material-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* İçeriği başa, butonları sona iter */
+    padding: 15px;
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.material-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Metnin alanı kaplamasını sağlar */
+    min-width: 0; /* Uzun isimlerde taşmayı önler */
+}
+
+.material-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Çok uzun isimleri üç nokta yapar */
+}
+
+.material-actions {
+    display: flex;
+    gap: 15px; /* Butonlar arası sabit boşluk */
+    margin-left: 15px;
+    align-items: center;
+}
+
+.btn-edit-material { color: #3498db; cursor: pointer; }
+.btn-delete-material { color: #e74c3c; cursor: pointer; }
 
 /* --- ÖĞRENCİ KARTLARI --- */
 .student-card {
@@ -92,11 +138,11 @@ body {
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 5px 15px rgba(0,0,0,0.04);
     border-left: 6px solid var(--liberum-gold);
+    padding: 15px;
 }
 
 .student-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 
 .avatar {
@@ -111,7 +157,6 @@ body {
     font-weight: 800;
     margin-right: 15px;
     border: 1px solid var(--liberum-gold);
-    font-size: 1.2rem;
 }
 
 /* --- ALT NAVİGASYON --- */
@@ -137,7 +182,6 @@ body {
     text-decoration: none;
     color: #bdc3c7;
     text-align: center;
-    transition: 0.3s;
     flex: 1;
 }
 
@@ -151,7 +195,6 @@ body {
     background-color: #f8f9fa;
     padding: 14px;
     border-radius: 15px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .btn-status {
