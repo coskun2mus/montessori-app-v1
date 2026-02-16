@@ -3,159 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liberum Montessori Akademia - Gözlem Paneli</title>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Liberum Montessori Akademia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { 
-            --liberum-green: #4a5d4e; 
-            --liberum-gold: #c5a059;
-            --liberum-light: #fdfaf5; 
-            --liberum-accent: #e9e0d2; 
-        }
-        
-        body { background-color: var(--liberum-light); font-family: 'Nunito', sans-serif; padding-bottom: 110px; margin: 0; }
-        
-        /* LOGO VE ÜST ALAN */
-        .hero-header {
-            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.95)), url('logo.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            height: 220px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 5px solid var(--liberum-green);
-        }
-
-        .hero-title {
-            color: var(--liberum-green);
-            font-weight: 800;
-            font-size: 1.8rem;
-            margin-top: 130px; /* Logonun altına gelmesi için */
-            letter-spacing: 1px;
-            text-align: center;
-        }
-
-        /* SINIF SEÇİMİ (MERKEZİ) */
-        .selection-container {
-            max-width: 500px;
-            margin: -35px auto 30px;
-            padding: 0 20px;
-            position: relative;
-            z-index: 100;
-        }
-
-        .btn-class-selector {
-            background-color: var(--liberum-green);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 50px;
-            font-weight: 700;
-            width: 100%;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .btn-class-selector:hover { background-color: #3d4d40; transform: translateY(-2px); color: white; }
-
-        /* ÖĞRENCİ KARTLARI */
-        .student-card { 
-            border: none;
-            border-left: 5px solid var(--liberum-gold);
-            border-radius: 20px; 
-            background: white; 
-            transition: all 0.3s ease; 
-            cursor: pointer; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .student-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-
-        .avatar { 
-            background: var(--liberum-accent); color: var(--liberum-green); 
-            width: 55px; height: 55px; display: flex; align-items: center; 
-            justify-content: center; border-radius: 50%; font-weight: 800;
-            font-size: 1.2rem;
-        }
-
-        /* MODAL */
-        .modal-content { border-radius: 35px; border: none; }
-        .btn-status { 
-            padding: 16px; font-weight: bold; border-radius: 18px; 
-            margin-bottom: 12px; width: 100%; text-align: left; 
-            display: flex; justify-content: space-between; align-items: center;
-            transition: 0.2s;
-        }
-        .btn-status:active { transform: scale(0.97); }
-        
-        /* BOTTOM NAV */
-        .modern-nav { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: white; width: 90%; max-width: 400px;
-            display: flex; justify-content: space-around; padding: 15px; 
-            border-radius: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            z-index: 1001; border: 1px solid var(--liberum-accent);
-        }
-        .nav-item-mobile { text-align: center; color: #aaa; text-decoration: none; font-size: 0.75rem; }
-        .nav-item-mobile.active { color: var(--liberum-green); font-weight: bold; }
-        .nav-item-mobile i { font-size: 1.4rem; display: block; margin-bottom: 2px; }
-
-        .last-obs-badge { font-size: 0.7rem; padding: 5px 10px; border-radius: 10px; }
-    </style>
-</head>
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
 
-<header class="hero-header">
-    <h1 class="hero-title">Liberum Montessori Akademia</h1>
+<header class="hero-section">
+    <div class="hero-content">
+        <img src="logo.png" alt="Liberum Logo" class="main-logo">
+        <h1 class="school-title">Liberum Montessori Akademia</h1>
+        <p class="motto">Özgür Düşün, Özgür Ol</p>
+    </div>
 </header>
 
-<div class="selection-container">
-    <div class="dropdown text-center">
-        <button class="btn btn-class-selector dropdown-toggle shadow" type="button" id="classSelectBtn" data-bs-toggle="dropdown">
-            <span><i class="fas fa-chalkboard-teacher me-2"></i>Sınıf Seçiniz</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-2" id="classList" style="border-radius: 20px; width: 100%;"></ul>
-    </div>
-</div>
+<main class="container">
+    <section class="selection-container">
+        <div class="dropdown">
+            <button class="btn-class-selector dropdown-toggle shadow-lg" type="button" id="classSelectBtn" data-bs-toggle="dropdown">
+                <span><i class="fas fa-school me-2"></i>Sınıf Seçiniz</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-2" id="classList">
+                </ul>
+        </div>
+    </section>
 
-<div class="container px-4">
-    <div id="welcomeMessage" class="text-center p-5">
-        <i class="fas fa-seedling fa-3x text-success opacity-25 mb-3 d-block"></i>
-        <h5 class="text-muted fw-bold">Hoş Geldiniz</h5>
-        <p class="small text-muted">Lütfen gözlem girişi yapacağınız sınıfı seçin.</p>
+    <div id="welcomeMessage" class="text-center p-5 opacity-50">
+        <i class="fas fa-seedling fa-3x mb-3 text-success d-block"></i>
+        <h5>Hoş Geldiniz</h5>
+        <p class="small">Lütfen işlem yapmak istediğiniz sınıfı seçin.</p>
     </div>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="studentContainer"></div>
-</div>
 
-<nav class="modern-nav">
-    <a href="/" class="nav-item-mobile active"><i class="fas fa-th-large"></i><span>Panel</span></a>
-    <a href="/ayarlar" class="nav-item-mobile"><i class="fas fa-user-gear"></i><span>Yönetim</span></a>
-    <a href="/raporlar" class="nav-item-mobile"><i class="fas fa-chart-pie"></i><span>Raporlar</span></a>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="studentContainer">
+        </div>
+</main>
+
+<nav class="bottom-nav">
+    <a href="/" class="nav-item active"><i class="fas fa-th-large"></i><span>Panel</span></a>
+    <a href="/ayarlar" class="nav-item"><i class="fas fa-cog"></i><span>Ayarlar</span></a>
+    <a href="/raporlar" class="nav-item"><i class="fas fa-chart-line"></i><span>Raporlar</span></a>
 </nav>
 
 <div class="modal fade" id="observationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered p-3">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="modal-title fw-bold text-success" id="selectedStudentName">Hızlı Gözlem</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 px-4 pt-4">
+                <h5 class="fw-bold" id="selectedStudentName">Hızlı Gözlem</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <div id="lastObservations" class="mb-3 p-3 rounded-4 bg-light" style="font-size: 0.85rem; display:none; border: 1px dashed var(--liberum-gold);">
-                    <div class="fw-bold text-success mb-2 small"><i class="fas fa-history me-1"></i> Son Gözlemler:</div>
-                    <div id="obsHistoryContent"></div>
+                <div id="lastObservations" class="mb-3 p-3 rounded-4 bg-light border-start border-warning border-4" style="display:none;">
+                    <div class="fw-bold text-success small mb-1">Son Çalışmalar:</div>
+                    <div id="obsHistoryContent" class="small"></div>
                 </div>
 
-                <label class="small fw-bold text-muted mb-1 ms-1">Gelişim Alanı</label>
-                <select class="form-select mb-3 shadow-sm border-0 bg-light" id="areaSelect" onchange="filterLessonsByArea()" style="border-radius: 12px; padding: 12px;">
-                    <option selected disabled>Alan Seçin...</option>
+                <select class="form-select mb-3 custom-input" id="areaSelect" onchange="filterLessonsByArea()">
+                    <option selected disabled>Gelişim Alanı Seçin...</option>
                     <option value="Günlük Yaşam">Günlük Yaşam</option>
                     <option value="Duyusal">Duyusal</option>
                     <option value="Matematik">Matematik</option>
@@ -163,17 +66,16 @@
                     <option value="Kültür">Kültür</option>
                 </select>
 
-                <label class="small fw-bold text-muted mb-1 ms-1">Materyal / Çalışma</label>
-                <select class="form-select mb-4 shadow-sm border-0 bg-light" id="lessonList" style="border-radius: 12px; padding: 12px;">
+                <select class="form-select mb-4 custom-input" id="lessonList">
                     <option selected disabled>Önce Alan Seçiniz...</option>
                 </select>
                 
-                <div class="status-buttons">
-                    <button class="btn btn-outline-info btn-status" onclick="saveQuickObservation('Sunuldu')">1. Sunuldu <i class="fas fa-eye"></i></button>
-                    <button class="btn btn-outline-warning btn-status text-dark" onclick="saveQuickObservation('Çalışıyor')">2. Çalışıyor <i class="fas fa-sync"></i></button>
-                    <button class="btn btn-outline-success btn-status" onclick="saveQuickObservation('Ustalaştı')">3. Ustalaştı <i class="fas fa-star"></i></button>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-status btn-outline-info" onclick="saveQuickObservation('Sunuldu')">1. Sunuldu <i class="fas fa-check"></i></button>
+                    <button class="btn btn-status btn-outline-warning" onclick="saveQuickObservation('Çalışıyor')">2. Çalışıyor <i class="fas fa-sync"></i></button>
+                    <button class="btn btn-status btn-outline-success" onclick="saveQuickObservation('Ustalaştı')">3. Ustalaştı <i class="fas fa-star"></i></button>
                 </div>
-                <textarea class="form-control mt-2 border-0 bg-light" id="obsNote" rows="2" placeholder="Özel not ekle..." style="border-radius: 15px;"></textarea>
+                <textarea class="form-control mt-3 custom-input" id="obsNote" rows="2" placeholder="Not ekle..."></textarea>
             </div>
         </div>
     </div>
