@@ -1,3 +1,7 @@
+/* Liberum Montessori Akademia - Global Stylesheet
+    Tasarım Sabit, Katman ve Hizalama Güncellenmiş Final Versiyon
+*/
+
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
 
 :root {
@@ -5,6 +9,8 @@
     --liberum-gold: #c5a059;
     --liberum-light: #fdfaf5;
     --liberum-dark: #2c3e50;
+    --white: #ffffff;
+    --shadow: rgba(0,0,0,0.1);
 }
 
 body {
@@ -12,70 +18,67 @@ body {
     font-family: 'Poppins', sans-serif;
     color: var(--liberum-dark);
     margin: 0;
-    padding-bottom: 140px; /* Navigasyonun üzerine binmemesi için biraz daha artırıldı */
+    padding-bottom: 120px;
+    overflow-x: hidden;
 }
 
-/* --- HERO BÖLÜMÜ --- */
-.hero-section {
-    background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)), url('logo.png');
-    background-size: cover;
-    background-position: center;
-    height: 380px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: white;
-    border-radius: 0 0 50px 50px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    padding: 20px;
-}
-
-.school-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.6rem, 7vw, 2.8rem);
-    text-shadow: 2px 4px 20px rgba(0,0,0,0.7);
-    margin: 0;
-    line-height: 1.2;
-}
-
-/* --- SINIF SEÇİMİ (MOBİL DÜZELTMELİ) --- */
+/* --- KRİTİK KATMAN (Z-INDEX) YÖNETİMİ --- */
 .selection-container {
     max-width: 500px;
     margin: -40px auto 40px;
     padding: 0 20px;
     position: relative;
-    z-index: 2001; /* Navigasyonun üzerinde kalması için */
+    z-index: 1000; 
 }
 
+/* Modal açıkken Venüs butonunu etkisizleştirir */
+body.modal-open .selection-container {
+    z-index: 1 !important; 
+}
+
+.modal { z-index: 2050 !important; }
+.modal-backdrop { z-index: 2040 !important; }
+
+/* --- HERO BÖLÜMÜ --- */
+.hero-section {
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('logo.png');
+    background-size: cover;
+    background-position: center;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--white);
+    border-radius: 0 0 50px 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.school-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+    text-shadow: 2px 4px 15px rgba(0,0,0,0.5);
+    padding: 0 20px;
+}
+
+/* --- SINIF SEÇİCİ (VENÜS) --- */
 .btn-class-selector {
     background-color: var(--liberum-green);
-    color: white;
-    border: 2px solid white;
-    padding: 18px;
+    color: var(--white);
+    border: 2px solid var(--white);
+    padding: 16px;
     border-radius: 50px;
-    font-weight: 700;
+    font-weight: 600;
     width: 100%;
-    font-size: 1.1rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
+    box-shadow: 0 15px 35px rgba(74, 93, 78, 0.3);
+    transition: transform 0.3s ease;
 }
 
-/* Mobilde listenin kaydırılabilir olması ve alt menüye takılmaması için */
-.dropdown-menu {
-    max-height: 300px; /* Sınıflar çoksa kaydırma çubuğu çıkar */
-    overflow-y: auto;
-    width: 100%;
-    border-radius: 25px !important;
-    padding: 10px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
-    -webkit-overflow-scrolling: touch; /* iOS kaydırma akıcılığı */
-}
-
+/* DROPDOWN İÇİNDEKİ ÖĞRETMEN İSMİNİ ALTA ALAN SİHİRLİ DOKUNUŞ */
 .class-item-content {
     display: flex;
-    flex-direction: column;
-    padding: 5px 0;
+    flex-direction: column; 
+    align-items: flex-start;
 }
 
 .class-name {
@@ -87,122 +90,92 @@ body {
 .teacher-name {
     color: #7f8c8d;
     font-size: 0.85rem;
+    margin-top: 2px;
 }
-
-/* --- AYARLAR: MATERYAL LİSTESİ DÜZENLEME --- */
-/* Bu bölüm ikonların kaymasını ve hizasızlığını çözer */
-.material-list-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* İçeriği başa, butonları sona iter */
-    padding: 15px;
-    background: white;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.material-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1; /* Metnin alanı kaplamasını sağlar */
-    min-width: 0; /* Uzun isimlerde taşmayı önler */
-}
-
-.material-name {
-    font-weight: 600;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Çok uzun isimleri üç nokta yapar */
-}
-
-.material-actions {
-    display: flex;
-    gap: 15px; /* Butonlar arası sabit boşluk */
-    margin-left: 15px;
-    align-items: center;
-}
-
-.btn-edit-material { color: #3498db; cursor: pointer; }
-.btn-delete-material { color: #e74c3c; cursor: pointer; }
 
 /* --- ÖĞRENCİ KARTLARI --- */
 .student-card {
-    background: white;
+    background: var(--white);
     border: none;
-    border-radius: 25px;
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.04);
-    border-left: 6px solid var(--liberum-gold);
-    padding: 15px;
+    box-shadow: 0 4px 15px var(--shadow);
+    transition: all 0.2s ease;
+    border-left: 5px solid var(--liberum-gold);
 }
 
-.student-card:hover {
-    transform: translateY(-8px);
-}
+.student-card:active { transform: scale(0.98); }
 
 .avatar {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     background: var(--liberum-light);
     color: var(--liberum-green);
+    border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 18px;
-    font-weight: 800;
+    font-weight: 700;
     margin-right: 15px;
-    border: 1px solid var(--liberum-gold);
+    border: 1px solid #eee;
 }
 
 /* --- ALT NAVİGASYON --- */
 .bottom-nav {
     position: fixed;
-    bottom: 25px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
     width: 90%;
-    max-width: 450px;
-    padding: 12px;
-    border-radius: 40px;
+    max-width: 400px;
+    padding: 10px;
+    border-radius: 30px;
     display: flex;
     justify-content: space-around;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
-    z-index: 2000;
-    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    z-index: 1010;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .nav-item {
     text-decoration: none;
-    color: #bdc3c7;
+    color: #a0aab2;
     text-align: center;
-    flex: 1;
+    font-size: 0.75rem;
 }
 
-.nav-item.active { color: var(--liberum-green); font-weight: 700; }
-.nav-item i { display: block; font-size: 1.5rem; margin-bottom: 2px; }
-.nav-item span { font-size: 0.7rem; }
-
-/* --- FORM & MODAL --- */
-.custom-input {
-    border: none;
-    background-color: #f8f9fa;
-    padding: 14px;
-    border-radius: 15px;
+.nav-item i {
+    display: block;
+    font-size: 1.4rem;
+    margin-bottom: 2px;
 }
 
+.nav-item.active { color: var(--liberum-green); }
+
+/* --- MODAL BUTONLARI --- */
 .btn-status {
-    padding: 16px;
-    border-radius: 18px;
-    font-weight: 700;
+    width: 100%;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    border: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
+    transition: 0.2s;
 }
+
+.btn-sunuldu { background-color: #e3f2fd; color: #1976d2; }
+.btn-calisiyor { background-color: #fff3e0; color: #f57c00; }
+.btn-ustalasti { background-color: #e8f5e9; color: #388e3c; }
+
+/* Kaydırma Çubuğu Güzelleştirme */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--liberum-light); }
+::-webkit-scrollbar-thumb { background: #dcdde1; border-radius: 10px; }

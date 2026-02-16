@@ -86,6 +86,7 @@
 <script>
 let allLessons = []; 
 let activeStudentId = null;
+let activeClassId = null; // Kayıt sonrası sınıfı korumak için ekledik
 
 document.addEventListener('DOMContentLoaded', loadClasses);
 
@@ -98,8 +99,8 @@ async function loadClasses() {
             <li>
                 <a class="dropdown-item py-2 border-bottom" href="#" onclick="selectClass('${c._id}', '${c.className}')">
                     <div class="class-item-content">
-                        <span class="class-name">${c.className}</span>
-                        <span class="teacher-name">${c.teacherName || 'Öğretmen Atanmadı'}</span>
+                        <div class="class-name fw-bold" style="display:block;">${c.className}</div>
+                        <div class="teacher-name text-muted small" style="display:block;">${c.teacherName || 'Öğretmen Atanmadı'}</div>
                     </div>
                 </a>
             </li>
@@ -108,6 +109,7 @@ async function loadClasses() {
 }
 
 async function selectClass(id, className) {
+    activeClassId = id; // Seçili sınıf ID'sini sakla
     document.getElementById('classSelectBtn').innerHTML = `<span><i class="fas fa-school me-2"></i>${className}</span>`;
     document.getElementById('welcomeMessage').classList.add('d-none');
     loadStudents(id);
@@ -173,7 +175,6 @@ function filterLessonsByArea() {
     });
 }
 
-// index.html içindeki fonksiyonu bununla değiştirin:
 async function saveQuickObservation(status) {
     const lessonId = document.getElementById('lessonList').value;
     const note = document.getElementById('obsNote').value;
@@ -187,7 +188,7 @@ async function saveQuickObservation(status) {
         lesson: lessonId, 
         status: status, 
         notes: note,
-        teacherName: "Arzu Hoca", // Şimdilik sabit, ileride login'den gelecek
+        teacherName: "Arzu Hoca", 
         observationDate: new Date() 
     };
 
@@ -202,18 +203,21 @@ async function saveQuickObservation(status) {
 
         if(res.ok) {
             alert("Gözlem başarıyla kaydedildi! ✅");
-            // Modalı kapat
+            
+            // Modalı kapatıyoruz
             const modalElement = document.getElementById('observationModal');
-            bootstrap.Modal.getInstance(modalElement).hide();
-            // Listeyi tazele
-            loadStudents(); 
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if(modalInstance) modalInstance.hide();
+            
+            // Sınıf listesini tekrar yükleyerek öğretmeni aynı yerde tutuyoruz
+            if(activeClassId) loadStudents(activeClassId); 
+            
         } else {
-            // Backend'den gelen "Bu kayıt zaten mevcut" hatasını burada gösteriyoruz
+            // Backend'den dönen özel hata mesajını (Mükerrer uyarısı gibi) gösterir
             alert("⚠️ " + (result.error || "Bir hata oluştu!"));
         }
     } catch (err) { 
-        console.error(err); 
-        alert("❌ Sunucuya bağlanılamadı!");
+        alert("❌ Sunucu hatası!");
     }
 }
 </script>
