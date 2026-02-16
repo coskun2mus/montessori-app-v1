@@ -30,15 +30,16 @@
     <div id="welcomeMessage" class="text-center p-5 opacity-50">
         <i class="fas fa-seedling fa-3x mb-3 text-success d-block"></i>
         <h5>Hoş Geldiniz</h5>
-        <p class="small">Devam etmek için bir sınıf seçimi yapın.</p>
+        <p class="small">Lütfen işlem yapmak istediğiniz sınıfı seçin.</p>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="studentContainer"></div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="studentContainer">
+        </div>
 </main>
 
 <nav class="bottom-nav">
     <a href="/" class="nav-item active"><i class="fas fa-th-large"></i><span>Panel</span></a>
-    <a href="/ayarlar" class="nav-item"><i class="fas fa-user-cog"></i><span>Yönetim</span></a>
+    <a href="/ayarlar" class="nav-item"><i class="fas fa-user-gear"></i><span>Yönetim</span></a>
     <a href="/raporlar" class="nav-item"><i class="fas fa-chart-pie"></i><span>Raporlar</span></a>
 </nav>
 
@@ -55,6 +56,7 @@
                     <div id="obsHistoryContent"></div>
                 </div>
 
+                <label class="small fw-bold text-muted mb-1 ms-1">Gelişim Alanı</label>
                 <select class="form-select mb-3 custom-input" id="areaSelect" onchange="filterLessonsByArea()">
                     <option selected disabled>Alan Seçin...</option>
                     <option value="Günlük Yaşam">Günlük Yaşam</option>
@@ -64,6 +66,7 @@
                     <option value="Kültür">Kültür</option>
                 </select>
 
+                <label class="small fw-bold text-muted mb-1 ms-1">Materyal / Çalışma</label>
                 <select class="form-select mb-4 custom-input" id="lessonList">
                     <option selected disabled>Önce Alan Seçiniz...</option>
                 </select>
@@ -73,7 +76,7 @@
                     <button class="btn btn-status btn-outline-warning text-dark" onclick="saveQuickObservation('Çalışıyor')">2. Çalışıyor <i class="fas fa-sync"></i></button>
                     <button class="btn btn-status btn-outline-success" onclick="saveQuickObservation('Ustalaştı')">3. Ustalaştı <i class="fas fa-star"></i></button>
                 </div>
-                <textarea class="form-control mt-3 custom-input" id="obsNote" rows="2" placeholder="Not ekle..."></textarea>
+                <textarea class="form-control mt-3 custom-input" id="obsNote" rows="2" placeholder="Özel not ekle (Opsiyonel)..."></textarea>
             </div>
         </div>
     </div>
@@ -92,6 +95,7 @@ async function loadClasses() {
         const response = await fetch('/api/classes');
         const classes = await response.json();
         const list = document.getElementById('classList');
+        // Mobilde isimlerin çakışmaması için .class-item-content yapısı eklendi
         list.innerHTML = classes.map(c => `
             <li>
                 <a class="dropdown-item py-3 border-bottom" href="#" onclick="selectClass('${c._id}', '${c.className}')">
@@ -113,30 +117,34 @@ async function selectClass(id, className) {
 
 async function loadStudents(classId) {
     const container = document.getElementById('studentContainer');
-    container.innerHTML = '<div class="text-center w-100 mt-5"><div class="spinner-border text-success"></div></div>';
+    container.innerHTML = '<div class="text-center w-100 mt-5"><div class="spinner-grow text-success"></div></div>';
     try {
         const response = await fetch(`/api/students/${classId}`);
         const students = await response.json();
         container.innerHTML = students.map(s => {
             const initials = (s.firstName[0] || '') + (s.lastName[0] || '');
+            const entryDate = s.enrollmentDate ? new Date(s.enrollmentDate).toLocaleDateString('tr-TR') : '-';
+            
             return `
                 <div class="col">
-                    <div class="student-card" onclick="openObservation('${s._id}', '${s.firstName} ${s.lastName}')">
+                    <div class="student-card p-3" onclick="openObservation('${s._id}', '${s.firstName} ${s.lastName}')">
                         <div class="avatar shadow-sm">${initials}</div>
                         <div>
                             <h6 class="mb-0 fw-bold text-dark">${s.firstName} ${s.lastName}</h6>
                             <small class="text-muted d-block">${s.ageInMonths || '?'} Aylık</small>
+                            <small class="text-muted" style="font-size:0.7rem;"><i class="far fa-calendar-check me-1"></i>Kayıt: ${entryDate}</small>
                         </div>
                         <i class="fas fa-chevron-right ms-auto text-muted opacity-50"></i>
                     </div>
                 </div>`;
         }).join('');
-    } catch (err) { container.innerHTML = '<p class="text-center mt-5 text-danger">Hata!</p>'; }
+    } catch (err) { container.innerHTML = '<p class="text-center mt-5 text-danger">Bağlantı hatası!</p>'; }
 }
 
 async function openObservation(id, name) {
     activeStudentId = id;
     document.getElementById('selectedStudentName').innerText = name;
+    
     try {
         const historyRes = await fetch(`/api/observations/student/${id}?limit=3`);
         const history = await historyRes.json();
@@ -146,7 +154,7 @@ async function openObservation(id, name) {
             document.getElementById('obsHistoryContent').innerHTML = history.map(obs => `
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="small text-truncate me-2">${obs.lesson ? obs.lesson.lessonName : 'Materyal'}</span>
-                    <span class="badge bg-secondary" style="font-size:0.6rem;">${obs.status}</span>
+                    <span class="badge bg-secondary last-obs-badge" style="font-size:0.65rem;">${obs.status}</span>
                 </div>`).join('');
         } else { historyDiv.style.display = 'none'; }
 
@@ -155,6 +163,7 @@ async function openObservation(id, name) {
         document.getElementById('areaSelect').selectedIndex = 0;
         document.getElementById('lessonList').innerHTML = '<option selected disabled>Önce Alan Seçiniz...</option>';
         document.getElementById('obsNote').value = '';
+
         new bootstrap.Modal(document.getElementById('observationModal')).show();
     } catch (err) { console.error(err); }
 }
@@ -163,6 +172,7 @@ function filterLessonsByArea() {
     const selectedArea = document.getElementById('areaSelect').value;
     const lessonSelect = document.getElementById('lessonList');
     const filtered = allLessons.filter(l => l.area === selectedArea);
+    
     lessonSelect.innerHTML = '<option selected disabled>Materyal Seçin...</option>';
     filtered.forEach(l => {
         lessonSelect.innerHTML += `<option value="${l._id}">${l.lessonName}</option>`;
@@ -171,15 +181,30 @@ function filterLessonsByArea() {
 
 async function saveQuickObservation(status) {
     const lessonId = document.getElementById('lessonList').value;
-    if(!lessonId || lessonId.includes("Seçiniz")) return alert("Materyal seçin!");
-    const data = { student: activeStudentId, lesson: lessonId, status: status, notes: document.getElementById('obsNote').value, observationDate: new Date() };
+    if(!lessonId || lessonId.includes("Seçiniz")) return alert("Lütfen bir materyal seçin!");
+
+    const data = {
+        student: activeStudentId,
+        lesson: lessonId,
+        status: status,
+        notes: document.getElementById('obsNote').value,
+        observationDate: new Date()
+    };
+
     try {
-        const res = await fetch('/api/observations', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        const res = await fetch('/api/observations', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
         if(res.ok) {
-            alert("Gözlem kaydedildi! ✅");
+            alert("Gözlem başarıyla kaydedildi! ✅");
             bootstrap.Modal.getInstance(document.getElementById('observationModal')).hide();
+        } else {
+            alert("Kayıt sırasında bir hata oluştu.");
         }
-    } catch (err) { alert("Hata oluştu!"); }
+    } catch (err) { console.error("API Hatası:", err); }
 }
 </script>
 </body>
