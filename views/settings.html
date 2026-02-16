@@ -239,7 +239,39 @@ async function saveLesson() {
     }
 }
 
-    async function loadManageLessons() {
+async function loadManageLessons() {
+    const listContainer = document.getElementById('manageLessonList');
+    const filterArea = document.getElementById('filterArea').value;
+    try {
+        const res = await fetch('/api/lessons');
+        let lessons = await res.json();
+        if(filterArea !== "Hepsi") lessons = lessons.filter(l => l.area === filterArea);
+
+        listContainer.innerHTML = '';
+        if (lessons.length === 0) {
+            listContainer.innerHTML = '<div class="text-center py-4 text-muted small">Materyal bulunamadı.</div>';
+            return;
+        }
+
+        lessons.forEach(l => {
+            // CSS'teki .material-list-item yapısını buraya uyguluyoruz
+            listContainer.innerHTML += `
+                <div class="material-list-item">
+                    <div class="material-content">
+                        <span class="badge bg-light text-primary border" style="font-size: 0.7rem; min-width: 85px;">${l.area}</span>
+                        <div class="material-name-text">
+                            ${l.lessonName} 
+                            <small class="text-muted fw-normal">(Zorluk: ${l.difficultyLevel || 1})</small>
+                        </div>
+                    </div>
+                    <div class="material-actions">
+                        <i class="fas fa-edit btn-edit-material" onclick="editLesson('${l._id}', '${l.lessonName}')"></i>
+                        <i class="fas fa-trash btn-delete-material" onclick="deleteLesson('${l._id}', '${l.lessonName}')"></i>
+                    </div>
+                </div>`;
+        });
+    } catch (err) { console.error("Hata:", err); }
+}
         const listContainer = document.getElementById('manageLessonList');
         const filterArea = document.getElementById('filterArea').value;
         try {
