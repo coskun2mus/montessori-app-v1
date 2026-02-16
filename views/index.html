@@ -173,17 +173,48 @@ function filterLessonsByArea() {
     });
 }
 
+// index.html içindeki fonksiyonu bununla değiştirin:
 async function saveQuickObservation(status) {
     const lessonId = document.getElementById('lessonList').value;
-    if(!lessonId || lessonId.includes("Seçiniz")) return alert("Materyal seçin!");
-    const data = { student: activeStudentId, lesson: lessonId, status: status, notes: document.getElementById('obsNote').value, observationDate: new Date() };
+    const note = document.getElementById('obsNote').value;
+
+    if(!lessonId || lessonId.includes("Seçiniz")) {
+        return alert("⚠️ Lütfen önce bir materyal seçiniz!");
+    }
+
+    const data = { 
+        student: activeStudentId, 
+        lesson: lessonId, 
+        status: status, 
+        notes: note,
+        teacherName: "Arzu Hoca", // Şimdilik sabit, ileride login'den gelecek
+        observationDate: new Date() 
+    };
+
     try {
-        const res = await fetch('/api/observations', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        const res = await fetch('/api/observations', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        });
+        
+        const result = await res.json();
+
         if(res.ok) {
-            alert("Gözlem kaydedildi! ✅");
-            bootstrap.Modal.getInstance(document.getElementById('observationModal')).hide();
+            alert("Gözlem başarıyla kaydedildi! ✅");
+            // Modalı kapat
+            const modalElement = document.getElementById('observationModal');
+            bootstrap.Modal.getInstance(modalElement).hide();
+            // Listeyi tazele
+            loadStudents(); 
+        } else {
+            // Backend'den gelen "Bu kayıt zaten mevcut" hatasını burada gösteriyoruz
+            alert("⚠️ " + (result.error || "Bir hata oluştu!"));
         }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error(err); 
+        alert("❌ Sunucuya bağlanılamadı!");
+    }
 }
 </script>
 </body>

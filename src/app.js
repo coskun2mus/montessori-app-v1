@@ -189,12 +189,31 @@ app.delete('/api/students/:id', async (req, res) => {
 });
 
 // 4. GÖZLEMLER
+// app.js içindeki ilgili kısmı bununla değiştirin:
 app.post('/api/observations', async (req, res) => {
     try {
+        const { student, lesson, status } = req.body;
+
+        // Mükerrer Kayıt Kontrolü: 
+        // Aynı öğrenci, aynı materyal ve aynı statü daha önce kaydedilmiş mi?
+        const existing = await Observation.findOne({ 
+            student: student, 
+            lesson: lesson, 
+            status: status 
+        });
+
+        if (existing) {
+            return res.status(400).json({ 
+                error: `Bu öğrenci için "${status}" durumu zaten kaydedilmiş. Tekrar kayıt yapılamaz.` 
+            });
+        }
+
+        // Eğer mükerrer değilse kaydet
         const newObservation = await Observation.create(req.body);
         res.status(201).json(newObservation);
     } catch (err) {
-        res.status(400).json({ error: "Gözlem kaydedilemedi." });
+        console.error("Gözlem Kayıt Hatası:", err);
+        res.status(400).json({ error: "Gözlem kaydedilemedi. Lütfen tüm alanları kontrol edin." });
     }
 });
 
