@@ -40,17 +40,13 @@ app.get('/api/classes', async (req, res) => {
 });
 
 app.post('/api/classes', async (req, res) => {
-    try {
-        const { className } = req.body;
-        // Case-insensitive (Büyük/Küçük harf duyarsız) kontrol
-        const exists = await Class.findOne({ className: { $regex: new RegExp(`^${className.trim()}$`, 'i') } });
-        if (exists) return res.status(400).json({ error: `"${className}" isimli bir sınıf zaten mevcut!` });
+    const { className } = req.body;
+    const exists = await Class.findOne({ className: { $regex: new RegExp(`^${className}$`, 'i') } });
+    if (exists) return res.status(400).json({ error: "Bu isimde bir sınıf zaten var!" });
 
-        const newClass = await Class.create(req.body);
-        res.status(201).json(newClass);
-    } catch (err) {
-        res.status(500).json({ error: "Sınıf eklenirken bir hata oluştu." });
-    }
+    const newClass = new Class(req.body);
+    await newClass.save();
+    res.json(newClass);
 });
 
 app.put('/api/classes/:id', async (req, res) => {
@@ -85,17 +81,15 @@ app.get('/api/lessons', async (req, res) => {
     }
 });
 
+// Materyal Ekleme Kontrolü
 app.post('/api/lessons', async (req, res) => {
-    try {
-        const { lessonName } = req.body;
-        const exists = await Lesson.findOne({ lessonName: { $regex: new RegExp(`^${lessonName.trim()}$`, 'i') } });
-        if (exists) return res.status(400).json({ error: `"${lessonName}" müfredatta zaten kayıtlı!` });
-
-        const newLesson = await Lesson.create(req.body);
-        res.status(201).json(newLesson);
-    } catch (err) {
-        res.status(500).json({ error: "Materyal eklenemedi." });
-    }
+    const { lessonName } = req.body;
+    const exists = await Lesson.findOne({ lessonName: { $regex: new RegExp(`^${lessonName}$`, 'i') } });
+    if (exists) return res.status(400).json({ error: "Bu materyal zaten sistemde kayıtlı!" });
+    
+    const newLesson = new Lesson(req.body);
+    await newLesson.save();
+    res.json(newLesson);
 });
 
 app.put('/api/lessons/:id', async (req, res) => {

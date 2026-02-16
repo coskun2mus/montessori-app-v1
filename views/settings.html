@@ -254,18 +254,27 @@
             });
         } catch (err) { console.error("Hata:", err); }
     }
+async function editLesson(id, oldName) {
+    const newName = prompt("Materyal ismini güncelle:", oldName);
+    if (!newName) return;
 
-    async function editLesson(id, oldName) {
-        const newName = prompt("Materyal ismini güncelle:", oldName);
-        if(!newName || newName.trim() === oldName) return;
-        await fetch(`/api/lessons/${id}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ lessonName: newName.trim() })
-        });
+    const newDifficulty = prompt("Zorluk seviyesini güncelle (1-10):", "5");
+    if (!newDifficulty || isNaN(newDifficulty)) return alert("Geçerli bir sayı giriniz!");
+
+    const res = await fetch(`/api/lessons/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+            lessonName: newName.trim(),
+            difficultyLevel: parseInt(newDifficulty) 
+        })
+    });
+
+    if(res.ok) {
+        alert("✅ Materyal ve Zorluk güncellendi!");
         loadManageLessons();
     }
-
+}
     async function deleteLesson(id, name) {
         if(confirm(`"${name}" silinsin mi?`)) {
             await fetch(`/api/lessons/${id}`, { method: 'DELETE' });
