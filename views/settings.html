@@ -209,26 +209,35 @@
         const filtered = allStudents.filter(s => (s.firstName + " " + s.lastName).toLowerCase().includes(term));
         renderStudentList(filtered);
     }
+// --- MATERYAL İŞLEMLERİ (GÜNCELLENDİ) ---
+async function saveLesson() {
+    const lessonName = document.getElementById('lessonName').value.trim();
+    const area = document.getElementById('lessonArea').value;
+    const difficultyLevel = parseInt(document.getElementById('lessonDifficulty').value);
 
-    // --- MATERYAL İŞLEMLERİ ---
-    async function saveLesson() {
-        const lessonName = document.getElementById('lessonName').value.trim();
-        const area = document.getElementById('lessonArea').value;
-        const difficultyLevel = parseInt(document.getElementById('lessonDifficulty').value);
+    if(!lessonName) return alert("Materyal adı girin!");
 
-        if(!lessonName) return alert("Materyal adı girin!");
-
+    try {
         const res = await fetch('/api/lessons', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ lessonName, area, difficultyLevel })
         });
+
+        const result = await res.json(); // Sunucudan gelen cevabı oku
+
         if(res.ok) { 
-            alert("✅ Materyal eklendi"); 
+            alert("✅ Materyal başarıyla eklendi"); 
             document.getElementById('lessonName').value = "";
             loadManageLessons();
+        } else {
+            // Backend'den gelen "Bu materyal zaten kayıtlı" mesajını burada gösteriyoruz
+            alert("⚠️ " + (result.error || "Bir hata oluştu"));
         }
+    } catch (err) { 
+        alert("Bağlantı hatası!"); 
     }
+}
 
     async function loadManageLessons() {
         const listContainer = document.getElementById('manageLessonList');
@@ -282,19 +291,35 @@ async function editLesson(id, oldName) {
         }
     }
 
-    // --- SINIF İŞLEMLERİ ---
-    async function saveClass() {
-        const className = document.getElementById('className').value.trim();
-        const teacherName = document.getElementById('teacherName').value.trim();
-        if(!className) return alert("Sınıf adı girin!");
+// --- SINIF İŞLEMLERİ (GÜNCELLENDİ) ---
+async function saveClass() {
+    const className = document.getElementById('className').value.trim();
+    const teacherName = document.getElementById('teacherName').value.trim();
+    
+    if(!className) return alert("Sınıf adı girin!");
+
+    try {
         const res = await fetch('/api/classes', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ className, teacherName })
         });
-        if(res.ok) { alert("✅ Sınıf eklendi"); loadClasses(); }
-    }
 
+        const result = await res.json();
+
+        if(res.ok) { 
+            alert("✅ Sınıf başarıyla eklendi"); 
+            document.getElementById('className').value = "";
+            document.getElementById('teacherName').value = "";
+            loadClasses(); 
+        } else {
+            // Backend'den gelen "Bu sınıf zaten mevcut" mesajını gösteriyoruz
+            alert("⚠️ " + (result.error || "Bir hata oluştu"));
+        }
+    } catch (err) { 
+        alert("Bağlantı hatası!"); 
+    }
+}
     async function loadClasses() {
         try {
             const res = await fetch('/api/classes');
