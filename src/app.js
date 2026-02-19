@@ -225,7 +225,8 @@ app.get('/api/observations/student/:studentId', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
         const observations = await Observation.find({ student: req.params.studentId })
-            .populate('lesson') 
+            .populate('lesson')
+            .populate('student', 'birthDate enrollmentDate')
             .sort({ observationDate: -1 })
             .limit(limit);
         res.json(observations);
@@ -238,7 +239,8 @@ app.get('/api/observations/student/:studentId', async (req, res) => {
 app.get('/api/observations/student/:studentId/area-summary', async (req, res) => {
     try {
         const observations = await Observation.find({ student: req.params.studentId })
-            .populate('lesson');
+            .populate('lesson')
+            .populate('student', 'birthDate enrollmentDate');
 
         // lesson populate edilememiş kayıtları ve successScore null olanları filtrele
         const valid = observations.filter(o =>
