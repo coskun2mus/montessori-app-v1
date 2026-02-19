@@ -18,9 +18,13 @@ const Lesson = require('./models/Lesson');
 const Observation = require('./models/Observation');
 
 // MONGODB BAĞLANTISI
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Liberum DB Bağlantısı Başarılı!'))
-  .catch((err) => console.error('❌ Bağlantı hatası:', err));
+if (process.env.MONGO_URI) {
+    mongoose.connect(process.env.MONGO_URI)
+        .then(() => console.log('✅ Liberum DB Bağlantısı Başarılı!'))
+        .catch((err) => console.error('❌ Bağlantı hatası:', err));
+} else {
+    console.warn('⚠️  UYARI: Mongo URI bulunamadı, bulut ortamı bekleniyor.');
+}
 
 // --- SAYFA ROTALARI ---
 app.get('/', (req, res) => res.sendFile(path.join(viewsPath, 'index.html')));
@@ -227,6 +231,46 @@ app.get('/api/observations/student/:studentId', async (req, res) => {
         res.json(observations);
     } catch (err) {
         res.status(500).json({ error: "Gözlem geçmişi alınamadı." });
+    }
+});
+
+// Alan bazlı başarı özeti (Raporlar sayfası için)
+app.get('/api/observations/student/:studentId/area-summary', async (req, res) => {
+    try {
+        const observations = await Observation.find({ student: req.params.studentId })
+            .populate('lesson');
+
+        // lesson populate edilememiş kayıtları ve successScore null olanları filtrele
+        const valid = observations.filter(o =>
+            o.lesson && typeof o.lesson === 'object' && o.successScore !== null
+        );
+
+        // Alan bazında gruplama
+        const areaMap = {};
+        for (const obs of valid) {
+            const area = obs.lesson.area || 'Diğer';
+            if (!areaMap[area]) areaMap[area] = { total: 0, count: 0, observations: [] };
+            areaMap[area].total += obs.successScore;
+            areaMap[area].count++;
+            areaMap[area].observations.push({
+                lessonName: obs.lesson.lessonName,
+                status: obs.status,
+                score: obs.successScore,
+                date: obs.observationDate
+            });
+        }
+
+        // Ortalama hesapla ve sırala
+        const summary = Object.entries(areaMap).map(([area, data]) => ({
+            area,
+            avgScore: parseFloat((data.total / data.count).toFixed(2)),
+            count: data.count,
+            observations: data.observations.sort((a, b) => new Date(b.date) - new Date(a.date))
+        })).sort((a, b) => b.avgScore - a.avgScore);
+
+        res.json({ studentId: req.params.studentId, totalObservations: valid.length, summary });
+    } catch (err) {
+        res.status(500).json({ error: "Alan özeti alınamadı." });
     }
 });
 

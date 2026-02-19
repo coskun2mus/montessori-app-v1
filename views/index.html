@@ -140,6 +140,22 @@ async function loadStudents(classId) {
     } catch (err) { container.innerHTML = '<p class="text-center mt-5 text-danger">Hata!</p>'; }
 }
 
+function getScoreUI(score) {
+    if (score === null || score === undefined) {
+        return `<span class="score-badge score-none">—</span>`;
+    }
+    let tier, label;
+    if      (score <= 3)  { tier = 'low';  label = '🔴'; }
+    else if (score <= 7)  { tier = 'mid';  label = '🟡'; }
+    else                  { tier = 'high'; label = '🟢'; }
+    const pct = Math.min((score / 10) * 100, 100).toFixed(0);
+    return `
+        <div class="score-bar-wrap">
+            <div class="score-bar-fill score-${tier}" style="width:${pct}%"></div>
+        </div>
+        <span class="score-badge score-${tier}">${label} ${score.toFixed(1)}</span>`;
+}
+
 async function openObservation(id, name) {
     activeStudentId = id;
     document.getElementById('selectedStudentName').innerText = name;
@@ -150,9 +166,10 @@ async function openObservation(id, name) {
         if (history.length > 0) {
             historyDiv.style.display = 'block';
             document.getElementById('obsHistoryContent').innerHTML = history.map(obs => `
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="small text-truncate me-2">${obs.lesson ? obs.lesson.lessonName : 'Materyal'}</span>
-                    <span class="badge bg-secondary" style="font-size:0.6rem;">${obs.status}</span>
+                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                    <span class="small text-truncate flex-grow-1">${obs.lesson ? obs.lesson.lessonName : 'Materyal'}</span>
+                    <span class="badge bg-secondary" style="font-size:0.6rem;flex-shrink:0;">${obs.status}</span>
+                    ${getScoreUI(obs.successScore)}
                 </div>`).join('');
         } else { historyDiv.style.display = 'none'; }
 

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişim Raporu — Liberum Montessori</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .report-hero {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a5d4e 60%, #c5a059 100%);
+            padding: 48px 20px 80px;
+            text-align: center;
+            color: #fff;
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .report-hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.4rem, 6vw, 2.2rem);
+            text-shadow: 1px 3px 10px rgba(0,0,0,0.4);
+            margin-bottom: 4px;
+        }
+        .report-hero p { opacity: 0.75; font-size: 0.88rem; margin: 0; }
+
+        .student-picker {
+            margin: -36px auto 28px;
+            max-width: 480px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 100;
+        }
+        .student-picker select {
+            border-radius: 50px;
+            padding: 14px 22px;
+            font-weight: 600;
+            border: none;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            background: #fff;
+            color: #2c3e50;
+            appearance: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        .picker-icon {
+            position: absolute;
+            right: 38px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4a5d4e;
+            pointer-events: none;
+        }
+
+        #reportContent { max-width: 680px; margin: 0 auto; padding: 0 16px 120px; }
+
+        /* Özet sayaç kartları */
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 16px 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            text-align: center;
+            border-top: 4px solid var(--liberum-gold);
+        }
+        .stat-card .stat-num {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--liberum-green);
+            line-height: 1;
+        }
+        .stat-card .stat-label { font-size: 0.68rem; color: #888; margin-top: 4px; }
+
+        /* Genel başarı yüzdesi ring */
+        .global-ring-wrap {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .global-ring {
+            width: 86px; height: 86px;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            border: 5px solid;
+            transition: border-color 0.4s;
+        }
+        .global-ring small { font-size: 0.5rem; font-weight: 500; opacity: 0.7; }
+        .ring-low  { border-color: #e74c3c; color: #c0392b; background: #fdecea; }
+        .ring-mid  { border-color: #f39c12; color: #b7770d; background: #fef9e7; }
+        .ring-high { border-color: #27ae60; color: #1e8449; background: #eafaf1; }
+
+        /* Chart kutusu */
+        .chart-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            padding: 20px;
+        }
+        .chart-card h6 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 14px;
+        }
+
+        /* Gözlem detay listesi (collapse) */
+        .area-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+        .area-header {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            cursor: pointer;
+        }
+        .area-icon {
+            width: 38px; height: 38px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0; margin-right: 10px;
+        }
+        .area-name   { font-weight: 700; font-size: 0.9rem; color: #2c3e50; }
+        .area-count  { font-size: 0.68rem; color: #999; }
+        .area-avg    { font-weight: 800; font-size: 1rem; flex-shrink: 0; }
+        .score-low   { color: #c0392b; }
+        .score-mid   { color: #b7770d; }
+        .score-high  { color: #1e8449; }
+
+        .obs-list { padding: 0 18px 12px; border-top: 1px dashed #f0f0f0; }
+        .obs-row {
+            display: flex; align-items: center;
+            gap: 8px; padding: 7px 0;
+            border-bottom: 1px dashed #f5f5f5;
+        }
+        .obs-row:last-child { border-bottom: none; }
+        .obs-lesson { font-size: 0.73rem; color: #444; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .obs-pill {
+            font-size: 0.57rem; font-weight: 700; padding: 2px 7px;
+            border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+        }
+        .pill-Sunuldu     { background:#e3f2fd; color:#1976d2; }
+        .pill-Calisiyor   { background:#fff3e0; color:#f57c00; }
+        .pill-HataKontrol { background:#fce4ec; color:#c62828; }
+        .pill-Ustalasti   { background:#e8f5e9; color:#388e3c; }
+        .obs-score        { font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+
+        .empty-state { text-align: center; padding: 60px 20px; opacity: 0.45; }
+        .empty-state i { font-size: 3rem; margin-bottom: 12px; color: var(--liberum-green); }
+    </style>
+</head>
+<body>
+
+<header class="report-hero">
+    <h1><i class="fas fa-chart-bar me-2"></i>Gelişim Raporu</h1>
+    <p>Öğrenci bazlı alan performans analizi</p>
+</header>
+
+<div class="student-picker">
+    <select id="studentSelect" onchange="loadReport(this.value)">
+        <option value="" disabled selected>Öğrenci seçiniz…</option>
+    </select>
+    <i class="fas fa-chevron-down picker-icon"></i>
+</div>
+
+<div id="reportContent">
+    <div class="empty-state" id="emptyState">
+        <i class="fas fa-seedling d-block"></i>
+        <p class="small">Raporu görüntülemek için bir öğrenci seçin.</p>
+    </div>
+    <div id="reportBody" style="display:none;"></div>
+</div>
+
+<nav class="bottom-nav">
+    <a href="/" class="nav-item"><i class="fas fa-th-large"></i><span>Panel</span></a>
+    <a href="/ayarlar" class="nav-item"><i class="fas fa-user-gear"></i><span>Yönetim</span></a>
+    <a href="/raporlar" class="nav-item active"><i class="fas fa-chart-pie"></i><span>Raporlar</span></a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── SABITLER ──────────────────────────────────────────
+const AREA_META = {
+    'Günlük Yaşam': { icon: '🏡', color: '#8e44ad', rgba: 'rgba(142,68,173,0.75)' },
+    'Duyusal':      { icon: '🎨', color: '#2980b9', rgba: 'rgba(41,128,185,0.75)' },
+    'Dil':          { icon: '📖', color: '#16a085', rgba: 'rgba(22,160,133,0.75)' },
+    'Matematik':    { icon: '🔢', color: '#d35400', rgba: 'rgba(211,84,0,0.75)'   },
+    'Kültür':       { icon: '🌍', color: '#c0392b', rgba: 'rgba(192,57,43,0.75)'  },
+    'Diğer':        { icon: '📌', color: '#7f8c8d', rgba: 'rgba(127,140,141,0.75)'},
+};
+
+const PILL_MAP = {
+    'Sunuldu':       'pill-Sunuldu',
+    'Çalışıyor':     'pill-Calisiyor',
+    'Hata Kontrolü': 'pill-HataKontrol',
+    'Ustalaştı':     'pill-Ustalasti',
+};
+
+function scoreTier(s) { return s <= 3 ? 'low' : s <= 7 ? 'mid' : 'high'; }
+
+let chartInstance = null;
+
+// ── SAYFA YÜKLENDİĞİNDE ÖĞRENCİLERİ GETİR ──────────
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('/api/students/all');
+        const students = await res.json();
+        const sel = document.getElementById('studentSelect');
+        students.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s._id;
+            opt.textContent = `${s.firstName} ${s.lastName}`;
+            sel.appendChild(opt);
+        });
+    } catch (e) { console.error('Öğrenciler yüklenemedi', e); }
+});
+
+// ── RAPORU YÜKLE ────────────────────────────────────
+async function loadReport(studentId) {
+    if (!studentId) return;
+    document.getElementById('emptyState').style.display = 'none';
+    const body = document.getElementById('reportBody');
+    body.style.display = 'block';
+    body.innerHTML = `<div class="text-center py-5"><div class="spinner-grow text-success"></div></div>`;
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+    try {
+        const res  = await fetch(`/api/observations/student/${studentId}/area-summary`);
+        const data = await res.json();
+
+        if (!data.summary || data.summary.length === 0) {
+            body.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox d-block"></i>
+                    <p class="small">Bu öğrenci için henüz değerlendirilebilir gözlem kaydı yok.</p>
+                </div>`;
+            return;
+        }
+
+        // Genel ortalama → yüzde
+        const globalAvg = data.summary.reduce((s, a) => s + a.avgScore, 0) / data.summary.length;
+        const globalPct = ((globalAvg / 10) * 100).toFixed(1);
+        const tier      = scoreTier(globalAvg);
+        const bestArea  = data.summary[0];
+
+        body.innerHTML = `
+            <!-- ÖZET SAYAÇLAR -->
+            <div class="row g-3 mb-3">
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-num">${data.totalObservations}</div>
+                        <div class="stat-label">Toplam Gözlem</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-num">${data.summary.length}</div>
+                        <div class="stat-label">Çalışılan Alan</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-num score-${tier}">${globalAvg.toFixed(1)}</div>
+                        <div class="stat-label">Genel Ort. / 10</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GENEL BAŞARI YÜZDESİ -->
+            <div class="global-ring-wrap mb-3">
+                <div class="global-ring ring-${tier}">
+                    %${globalPct}
+                    <small>Başarı</small>
+                </div>
+                <div>
+                    <div class="fw-bold" style="font-size:0.9rem;">Genel Başarı Yüzdesi</div>
+                    <div class="text-muted small mt-1">
+                        En güçlü alan: <strong>${AREA_META[bestArea.area]?.icon || ''} ${bestArea.area}</strong>
+                        (${bestArea.avgScore}/10)
+                    </div>
+                    <div class="text-muted" style="font-size:0.72rem; margin-top:4px;">
+                        ${data.summary.length} alanda ${data.totalObservations} gözlem değerlendirildi.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHART.JS — ALAN BAZLI BAR CHART -->
+            <div class="chart-card mb-3">
+                <h6><i class="fas fa-chart-bar me-1"></i>Alan Bazlı Puan Ortalaması</h6>
+                <canvas id="areaChart" height="220"></canvas>
+            </div>
+
+            <!-- GENİŞLETİLEBİLİR ALAN KARTLARI -->
+            <div class="fw-bold text-muted mb-2" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px;">
+                <i class="fas fa-list me-1"></i>Materyal Detayları
+            </div>
+            <div id="areaCards" class="d-flex flex-column gap-3"></div>`;
+
+        // ── CHART.JS RENDER ──────────────────────────────
+        const labels  = data.summary.map(a => `${AREA_META[a.area]?.icon || ''} ${a.area}`);
+        const scores  = data.summary.map(a => a.avgScore);
+        const bgColors = data.summary.map(a => (AREA_META[a.area]?.rgba || 'rgba(74,93,78,0.7)'));
+        const bdColors = data.summary.map(a => (AREA_META[a.area]?.color || '#4a5d4e'));
+
+        const ctx = document.getElementById('areaChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Ort. Başarı Puanı',
+                    data: scores,
+                    backgroundColor: bgColors,
+                    borderColor: bdColors,
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y',          // yatay bar
+                responsive: true,
+                animation: { duration: 900, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.parsed.x.toFixed(2)} / 10`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        min: 0, max: 10,
+                        grid: { color: '#f0f0f0' },
+                        ticks: { font: { size: 11 }, callback: v => v + '' }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { size: 12 } }
+                    }
+                }
+            }
+        });
+
+        // ── GENİŞLETİLEBİLİR ALAN KARTLARI ─────────────
+        const container = document.getElementById('areaCards');
+        data.summary.forEach((area, idx) => {
+            const meta   = AREA_META[area.area] || AREA_META['Diğer'];
+            const t      = scoreTier(area.avgScore);
+            const cardId = `obs-${idx}`;
+
+            const card = document.createElement('div');
+            card.className = 'area-card';
+            card.innerHTML = `
+                <div class="area-header" onclick="toggleObs('${cardId}', this)">
+                    <div class="d-flex align-items-center flex-grow-1 overflow-hidden">
+                        <div class="area-icon" style="background:${meta.color}20; color:${meta.color};">
+                            ${meta.icon}
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="area-name">${area.area}</div>
+                            <div class="area-count">${area.count} gözlem</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="area-avg score-${t}">${area.avgScore.toFixed(1)}<span style="font-size:0.6rem;font-weight:400;color:#aaa;">/10</span></span>
+                        <i class="fas fa-chevron-down text-muted" style="font-size:0.75rem;" id="icon-${cardId}"></i>
+                    </div>
+                </div>
+                <div class="obs-list" id="${cardId}" style="display:none;">
+                    ${area.observations.map(o => `
+                        <div class="obs-row">
+                            <span class="obs-lesson" title="${o.lessonName}">${o.lessonName}</span>
+                            <span class="obs-pill ${PILL_MAP[o.status] || 'bg-secondary text-white'}">${o.status}</span>
+                            <span class="obs-score score-${scoreTier(o.score)}">${o.score.toFixed(1)}</span>
+                        </div>`).join('')}
+                </div>`;
+            container.appendChild(card);
+        });
+
+    } catch (e) {
+        body.innerHTML = `<p class="text-center text-danger mt-4"><i class="fas fa-exclamation-triangle me-1"></i>Rapor alınırken hata oluştu.</p>`;
+        console.error(e);
+    }
+}
+
+function toggleObs(cardId, header) {
+    const el   = document.getElementById(cardId);
+    const icon = document.getElementById('icon-' + cardId);
+    const open = el.style.display === 'none';
+    el.style.display = open ? 'block' : 'none';
+    icon.className   = open ? 'fas fa-chevron-up text-muted' : 'fas fa-chevron-down text-muted';
+    icon.style.fontSize = '0.75rem';
+}
+</script>
+</body>
+</html>
