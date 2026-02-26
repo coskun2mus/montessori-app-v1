@@ -17,7 +17,7 @@ const observationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Sunuldu', 'Çalışıyor', 'Hata Kontrolü', 'Ustalaştı'],
+        enum: ['Sunuldu', 'Yönlendirme', 'Hata Kontrolü', 'Ustalaştı'],
         required: true
     },
     observationDate: {
@@ -37,7 +37,7 @@ const observationSchema = new mongoose.Schema({
 // Status → Başarı Katsayısı Haritası
 const STATUS_COEFFICIENTS = {
     'Sunuldu':       0.1,
-    'Çalışıyor':     0.4,
+    'Yönlendirme':   0.4,
     'Hata Kontrolü': 0.7,
     'Ustalaştı':     1.0
 };
