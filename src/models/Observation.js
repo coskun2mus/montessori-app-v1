@@ -161,12 +161,11 @@ observationSchema.virtual('successScore').get(function () {
         vF = computeVF(actualTimeDays, ET, T_ref, isEarlyPresent);
     }
 
-    // ── 5. Final Skor — Adalet Kuralı ile ────────────────────────────────
-    // adjustedScore = clamp( max(baseScore, D × coeff × ageFactor × seniorityFactor × vF), 0.1, 10.0 )
+    // ── 5. Final Skor (Alt Limit Olmadan) ────────────────────────────────
+    // adjustedScore = clamp( D × coeff × ageFactor × seniorityFactor × vF, 0.1, 10.0 )
     const computed  = baseScore * ageFactor * seniorityFactor * vF;
-    const justified = Math.max(baseScore, computed);  // Adalet Kuralı: baseScore tabanı
 
-    return parseFloat(clamp(justified, 0.1, 10.0).toFixed(2));
+    return parseFloat(clamp(computed, 0.1, 10.0).toFixed(2));
 });
 
 module.exports = mongoose.model('Observation', observationSchema);
