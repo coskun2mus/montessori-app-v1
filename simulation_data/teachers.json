@@ -1,0 +1,44 @@
+[
+  {
+    "_id": "69a112406ba1fadef5f452c5",
+    "name": "Elif Yılmaz",
+    "specialty": "Montessori Rehberi",
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452c6",
+    "name": "Caner Demir",
+    "specialty": "Montessori Rehberi",
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452c7",
+    "name": "Zeynep Kaya",
+    "specialty": "Montessori Rehberi",
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452c8",
+    "name": "Murat Çelik",
+    "specialty": "Montessori Rehberi",
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452c9",
+    "name": "Ayşe Şahin",
+    "specialty": "Montessori Rehberi",
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452ca",
+    "name": "Burak Özdemir",
+    "specialty": "Montessori Rehberi",
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  }
+]

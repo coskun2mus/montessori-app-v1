@@ -1,0 +1,56 @@
+[
+  {
+    "_id": "69a112406ba1fadef5f452cb",
+    "className": "Güneş Sınıfı",
+    "teacherName": "Elif Yılmaz",
+    "teacherId": "69a112406ba1fadef5f452c5",
+    "isActive": true,
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452cc",
+    "className": "Yıldızlar Grubu",
+    "teacherName": "Caner Demir",
+    "teacherId": "69a112406ba1fadef5f452c6",
+    "isActive": true,
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452cd",
+    "className": "Kelebekler",
+    "teacherName": "Zeynep Kaya",
+    "teacherId": "69a112406ba1fadef5f452c7",
+    "isActive": true,
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452ce",
+    "className": "Minik Kaşifler",
+    "teacherName": "Murat Çelik",
+    "teacherId": "69a112406ba1fadef5f452c8",
+    "isActive": true,
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452cf",
+    "className": "Doğa Sınıfı",
+    "teacherName": "Ayşe Şahin",
+    "teacherId": "69a112406ba1fadef5f452c9",
+    "isActive": true,
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  },
+  {
+    "_id": "69a112406ba1fadef5f452d0",
+    "className": "Gökkuşağı",
+    "teacherName": "Burak Özdemir",
+    "teacherId": "69a112406ba1fadef5f452ca",
+    "isActive": true,
+    "createdAt": "2026-02-27T03:40:48.128Z",
+    "updatedAt": "2026-02-27T03:40:48.128Z"
+  }
+]

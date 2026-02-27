@@ -277,27 +277,29 @@ app.get('/api/observations/student/:studentId/area-summary', async (req, res) =>
         const bestObs = Object.values(lessonBest);
 
         // ── Alan bazında gruplama (maxScore = difficultyLevel) ────────────
-        const STATUS_COEFF = { 'Sunuldu': 0.1, 'Yönlendirme': 0.4, 'Hata Kontrolü': 0.7, 'Ustalaştı': 1.0 };
         const areaMap = {};
         for (const obs of bestObs) {
             const area     = obs.lesson.area || 'Diğer';
             const maxScore = obs.lesson.difficultyLevel || 5;
-            const rawScore = maxScore * (STATUS_COEFF[obs.status] || 0.1);
+            // Algoritmanın ürettiği dinamik skoru alıyoruz:
+            const dynamicScore = obs.successScore;
+
             if (!areaMap[area]) areaMap[area] = { total: 0, maxTotal: 0, count: 0, observations: [] };
-            areaMap[area].total    += rawScore;
+            areaMap[area].total    += dynamicScore;
             areaMap[area].maxTotal += maxScore;
             areaMap[area].count++;
+            
             areaMap[area].observations.push({
                 lessonName: obs.lesson.lessonName,
                 status:     obs.status,
-                score:      parseFloat(rawScore.toFixed(2)),
+                score:      dynamicScore,
                 maxScore,
                 date:       obs.observationDate
             });
         }
 
         // ── Ağırlıklı başarı oranı: Σscore / ΣmaxScore ───────────────────
-        const totalScore = bestObs.reduce((s, o) => s + ((o.lesson.difficultyLevel || 5) * (STATUS_COEFF[o.status] || 0.1)), 0);
+        const totalScore = bestObs.reduce((s, o) => s + o.successScore, 0);
         const totalMax   = bestObs.reduce((s, o) => s + (o.lesson.difficultyLevel || 5), 0);
         const weightedSuccessRatio = totalMax > 0
             ? parseFloat((totalScore / totalMax).toFixed(4)) : 0;
