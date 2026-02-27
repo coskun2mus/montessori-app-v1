@@ -192,29 +192,45 @@ app.delete('/api/students/:id', async (req, res) => {
     }
 });
 
-// 4. GÖZLEMLER
-// app.js içindeki ilgili kısmı bununla değiştirin:
 app.post('/api/observations', async (req, res) => {
     try {
         const { student, lesson, status } = req.body;
 
-        // Mükerrer Kayıt Kontrolü: 
-        // Aynı öğrenci, aynı materyal ve aynı statü daha önce kaydedilmiş mi?
-        const existing = await Observation.findOne({ 
-            student: student, 
-            lesson: lesson, 
-            status: status 
-        });
-
+        // Mükerrer Kayıt Kontrolü:
+        const existing = await Observation.findOne({ student, lesson, status });
         if (existing) {
-            return res.status(400).json({ 
-                error: `Bu öğrenci için "${status}" durumu zaten kaydedilmiş. Tekrar kayıt yapılamaz.` 
+            return res.status(400).json({
+                error: `Bu öğrenci için "${status}" durumu zaten kaydedilmiş. Tekrar kayıt yapılamaz.`
             });
         }
 
-        // Eğer mükerrer değilse kaydet
-        const newObservation = await Observation.create(req.body);
+        const data = { ...req.body };
+
+        // ── Zaman Takibi: startDate / completionDate ──────────────────────
+        if (status === 'Sunuldu') {
+            // İlk sunum → startDate bu anki zaman
+            data.startDate = new Date();
+
+        } else if (status === 'Ustalaştı') {
+            // Tamamlandı → completionDate bu anki zaman
+            data.completionDate = new Date();
+
+            // startDate: aynı öğrenci + aynı materyal için en eski "Sunuldu" kaydından al
+            const sunulduRecord = await Observation.findOne(
+                { student, lesson, status: 'Sunuldu' },
+                { startDate: 1, observationDate: 1 }
+            ).sort({ observationDate: 1 });
+
+            if (sunulduRecord) {
+                // startDate alanı set edilmişse onu, yoksa observationDate'i kullan
+                data.startDate = sunulduRecord.startDate || sunulduRecord.observationDate;
+            }
+            // startDate bulunamadıysa vF graceful degradation ile 1.0 kabul edilir
+        }
+
+        const newObservation = await Observation.create(data);
         res.status(201).json(newObservation);
+
     } catch (err) {
         console.error("Gözlem Kayıt Hatası:", err);
         res.status(400).json({ error: "Gözlem kaydedilemedi. Lütfen tüm alanları kontrol edin." });

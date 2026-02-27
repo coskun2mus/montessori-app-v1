@@ -14,7 +14,11 @@ const lessonSchema = new mongoose.Schema({
     },
     difficultyLevel: {
         type: Number,
-        default: 1 // 1-10 arası zorluk puanı, ileride puanlama algoritmasında kullanılabilir
+        default: 1 // 1-10 arası zorluk puanı
+    },
+    minAge: {
+        type: Number,
+        default: null // Materyal için önerilen minimum yaş (ay cinsinden); ET formülünde A_min olarak kullanılır
     }
 }, { timestamps: true });
 
