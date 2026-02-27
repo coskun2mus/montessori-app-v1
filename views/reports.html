@@ -209,7 +209,12 @@ const PILL_MAP = {
     'Ustalaştı':     'pill-Ustalasti',
 };
 
-function scoreTier(s) { return s <= 3 ? 'low' : s <= 7 ? 'mid' : 'high'; }
+function ratioTier(r) { return r < 0.40 ? 'low' : r < 0.70 ? 'mid' : 'high'; }
+function ratioColor(r, alpha) {
+    if (r >= 0.70) return alpha ? 'rgba(39,174,96,0.75)'  : '#27ae60';
+    if (r >= 0.40) return alpha ? 'rgba(243,156,18,0.75)' : '#f39c12';
+    return                alpha ? 'rgba(231,76,60,0.75)'  : '#e74c3c';
+}
 
 let chartInstance = null;
 
@@ -250,56 +255,56 @@ async function loadReport(studentId) {
             return;
         }
 
-        // Genel ortalama → yüzde
-        const globalAvg = data.summary.reduce((s, a) => s + a.avgScore, 0) / data.summary.length;
-        const globalPct = ((globalAvg / 10) * 100).toFixed(1);
-        const tier      = scoreTier(globalAvg);
-        const bestArea  = data.summary[0];
+        // Ağırlıklı Başarı Oranı
+        const wsr      = data.weightedSuccessRatio ?? 0;
+        const wsrPct   = (wsr * 100).toFixed(1);
+        const tier     = ratioTier(wsr);
+        const bestArea = data.summary[0];
 
         body.innerHTML = `
             <!-- ÖZET SAYAÇLAR -->
             <div class="row g-3 mb-3">
                 <div class="col-4">
                     <div class="stat-card">
-                        <div class="stat-num">${data.totalObservations}</div>
-                        <div class="stat-label">Toplam Gözlem</div>
+                        <div class="stat-num">${data.totalMaterials}</div>
+                        <div class="stat-label">Materyal</div>
                     </div>
                 </div>
                 <div class="col-4">
                     <div class="stat-card">
                         <div class="stat-num">${data.summary.length}</div>
-                        <div class="stat-label">Çalışılan Alan</div>
+                        <div class="stat-label">Alan</div>
                     </div>
                 </div>
                 <div class="col-4">
                     <div class="stat-card">
-                        <div class="stat-num score-${tier}">${globalAvg.toFixed(1)}</div>
-                        <div class="stat-label">Genel Ort. / 10</div>
+                        <div class="stat-num score-${tier}">${wsrPct}%</div>
+                        <div class="stat-label">Başarı Oranı</div>
                     </div>
                 </div>
             </div>
 
-            <!-- GENEL BAŞARI YÜZDESİ -->
+            <!-- AĞIRLIKLI BAŞARI ORANI -->
             <div class="global-ring-wrap mb-3">
                 <div class="global-ring ring-${tier}">
-                    %${globalPct}
+                    %${wsrPct}
                     <small>Başarı</small>
                 </div>
                 <div>
-                    <div class="fw-bold" style="font-size:0.9rem;">Genel Başarı Yüzdesi</div>
+                    <div class="fw-bold" style="font-size:0.9rem;">Ağırlıklı Başarı Oranı</div>
                     <div class="text-muted small mt-1">
                         En güçlü alan: <strong>${AREA_META[bestArea.area]?.icon || ''} ${bestArea.area}</strong>
-                        (${bestArea.avgScore}/10)
+                        ( ${bestArea.avgScore.toFixed(1)} / ${bestArea.maxAvgScore.toFixed(1)} — %${(bestArea.successRatio * 100).toFixed(0)} )
                     </div>
                     <div class="text-muted" style="font-size:0.72rem; margin-top:4px;">
-                        ${data.summary.length} alanda ${data.totalObservations} gözlem değerlendirildi.
+                        ${data.summary.length} alanda ${data.totalMaterials} materyal değerlendirildi.
                     </div>
                 </div>
             </div>
 
             <!-- CHART.JS — ALAN BAZLI BAR CHART -->
             <div class="chart-card mb-3">
-                <h6><i class="fas fa-chart-bar me-1"></i>Alan Bazlı Puan Ortalaması</h6>
+                <h6><i class="fas fa-chart-bar me-1"></i>Alan Bazı Başarı Oranı</h6>
                 <canvas id="areaChart" height="220"></canvas>
             </div>
 
@@ -309,11 +314,11 @@ async function loadReport(studentId) {
             </div>
             <div id="areaCards" class="d-flex flex-column gap-3"></div>`;
 
-        // ── CHART.JS RENDER ──────────────────────────────
-        const labels  = data.summary.map(a => `${AREA_META[a.area]?.icon || ''} ${a.area}`);
-        const scores  = data.summary.map(a => a.avgScore);
-        const bgColors = data.summary.map(a => (AREA_META[a.area]?.rgba || 'rgba(74,93,78,0.7)'));
-        const bdColors = data.summary.map(a => (AREA_META[a.area]?.color || '#4a5d4e'));
+        // ── CHART.JS RENDER (Başarı Oranı Bazlı Dinamik Renkler) ──────────
+        const labels   = data.summary.map(a => `${AREA_META[a.area]?.icon || ''} ${a.area}`);
+        const scores   = data.summary.map(a => a.avgScore);
+        const bgColors = data.summary.map(a => ratioColor(a.successRatio, true));
+        const bdColors = data.summary.map(a => ratioColor(a.successRatio, false));
 
         const ctx = document.getElementById('areaChart').getContext('2d');
         chartInstance = new Chart(ctx, {
@@ -331,14 +336,17 @@ async function loadReport(studentId) {
                 }]
             },
             options: {
-                indexAxis: 'y',          // yatay bar
+                indexAxis: 'y',
                 responsive: true,
                 animation: { duration: 900, easing: 'easeOutQuart' },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ` ${ctx.parsed.x.toFixed(2)} / 10`
+                            label: c => {
+                                const a = data.summary[c.dataIndex];
+                                return ` ${a.avgScore.toFixed(1)} / ${a.maxAvgScore.toFixed(1)} — %${(a.successRatio * 100).toFixed(0)} başarı`;
+                            }
                         }
                     }
                 },
@@ -348,22 +356,18 @@ async function loadReport(studentId) {
                         grid: { color: '#f0f0f0' },
                         ticks: { font: { size: 11 }, callback: v => v + '' }
                     },
-                    y: {
-                        grid: { display: false },
-                        ticks: { font: { size: 12 } }
-                    }
+                    y: { grid: { display: false }, ticks: { font: { size: 12 } } }
                 }
             }
         });
 
-        // ── GENİŞLETİLEBİLİR ALAN KARTLARI ─────────────
+        // ── GENİŞLETİLEBİLİR ALAN KARTLARI ─────────────────────────────
         const container = document.getElementById('areaCards');
         data.summary.forEach((area, idx) => {
             const meta   = AREA_META[area.area] || AREA_META['Diğer'];
-            const t      = scoreTier(area.avgScore);
+            const t      = ratioTier(area.successRatio);
             const cardId = `obs-${idx}`;
-
-            const card = document.createElement('div');
+            const card   = document.createElement('div');
             card.className = 'area-card';
             card.innerHTML = `
                 <div class="area-header" onclick="toggleObs('${cardId}', this)">
@@ -373,11 +377,11 @@ async function loadReport(studentId) {
                         </div>
                         <div class="overflow-hidden">
                             <div class="area-name">${area.area}</div>
-                            <div class="area-count">${area.count} gözlem</div>
+                            <div class="area-count">${area.count} materyal</div>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="area-avg score-${t}">${area.avgScore.toFixed(1)}<span style="font-size:0.6rem;font-weight:400;color:#aaa;">/10</span></span>
+                        <span class="area-avg score-${t}">${area.avgScore.toFixed(1)}<span style="font-size:0.6rem;font-weight:400;color:#aaa;">/${area.maxAvgScore.toFixed(1)}</span></span>
                         <i class="fas fa-chevron-down text-muted" style="font-size:0.75rem;" id="icon-${cardId}"></i>
                     </div>
                 </div>
@@ -386,7 +390,7 @@ async function loadReport(studentId) {
                         <div class="obs-row">
                             <span class="obs-lesson" title="${o.lessonName}">${o.lessonName}</span>
                             <span class="obs-pill ${PILL_MAP[o.status] || 'bg-secondary text-white'}">${o.status}</span>
-                            <span class="obs-score score-${scoreTier(o.score)}">${o.score.toFixed(1)}</span>
+                            <span class="obs-score score-${ratioTier(o.score / o.maxScore)}">${o.score.toFixed(1)}<span style="font-size:0.55rem;color:#bbb;">/${o.maxScore.toFixed(1)}</span></span>
                         </div>`).join('')}
                 </div>`;
             container.appendChild(card);

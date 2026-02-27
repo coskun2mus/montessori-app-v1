@@ -251,42 +251,75 @@ app.get('/api/observations/student/:studentId', async (req, res) => {
     }
 });
 
-// Alan bazlı başarı özeti (Raporlar sayfası için)
+// Alan bazlı başarı özeti — Materyal başına en iyi gözlem baz alınır
 app.get('/api/observations/student/:studentId/area-summary', async (req, res) => {
     try {
         const observations = await Observation.find({ student: req.params.studentId })
             .populate('lesson')
             .populate('student', 'birthDate enrollmentDate');
 
-        // lesson populate edilememiş kayıtları ve successScore null olanları filtrele
         const valid = observations.filter(o =>
             o.lesson && typeof o.lesson === 'object' && o.successScore !== null
         );
 
-        // Alan bazında gruplama
-        const areaMap = {};
+        // ── Her materyal için en yüksek statülü gözlemi seç ──────────────
+        const STATUS_RANK = { 'Sunuldu': 1, 'Yönlendirme': 2, 'Hata Kontrolü': 3, 'Ustalaştı': 4 };
+        const lessonBest = {};
         for (const obs of valid) {
-            const area = obs.lesson.area || 'Diğer';
-            if (!areaMap[area]) areaMap[area] = { total: 0, count: 0, observations: [] };
-            areaMap[area].total += obs.successScore;
+            const lid = obs.lesson._id.toString();
+            if (!lessonBest[lid]) { lessonBest[lid] = obs; continue; }
+            const cur = STATUS_RANK[obs.status] ?? 0;
+            const best = STATUS_RANK[lessonBest[lid].status] ?? 0;
+            if (cur > best || (cur === best && obs.successScore > lessonBest[lid].successScore)) {
+                lessonBest[lid] = obs;
+            }
+        }
+        const bestObs = Object.values(lessonBest);
+
+        // ── Alan bazında gruplama (maxScore = difficultyLevel) ────────────
+        const STATUS_COEFF = { 'Sunuldu': 0.1, 'Yönlendirme': 0.4, 'Hata Kontrolü': 0.7, 'Ustalaştı': 1.0 };
+        const areaMap = {};
+        for (const obs of bestObs) {
+            const area     = obs.lesson.area || 'Diğer';
+            const maxScore = obs.lesson.difficultyLevel || 5;
+            const rawScore = maxScore * (STATUS_COEFF[obs.status] || 0.1);
+            if (!areaMap[area]) areaMap[area] = { total: 0, maxTotal: 0, count: 0, observations: [] };
+            areaMap[area].total    += rawScore;
+            areaMap[area].maxTotal += maxScore;
             areaMap[area].count++;
             areaMap[area].observations.push({
                 lessonName: obs.lesson.lessonName,
-                status: obs.status,
-                score: obs.successScore,
-                date: obs.observationDate
+                status:     obs.status,
+                score:      parseFloat(rawScore.toFixed(2)),
+                maxScore,
+                date:       obs.observationDate
             });
         }
 
-        // Ortalama hesapla ve sırala
-        const summary = Object.entries(areaMap).map(([area, data]) => ({
-            area,
-            avgScore: parseFloat((data.total / data.count).toFixed(2)),
-            count: data.count,
-            observations: data.observations.sort((a, b) => new Date(b.date) - new Date(a.date))
-        })).sort((a, b) => b.avgScore - a.avgScore);
+        // ── Ağırlıklı başarı oranı: Σscore / ΣmaxScore ───────────────────
+        const totalScore = bestObs.reduce((s, o) => s + ((o.lesson.difficultyLevel || 5) * (STATUS_COEFF[o.status] || 0.1)), 0);
+        const totalMax   = bestObs.reduce((s, o) => s + (o.lesson.difficultyLevel || 5), 0);
+        const weightedSuccessRatio = totalMax > 0
+            ? parseFloat((totalScore / totalMax).toFixed(4)) : 0;
 
-        res.json({ studentId: req.params.studentId, totalObservations: valid.length, summary });
+        const summary = Object.entries(areaMap).map(([area, d]) => {
+            const avgScore    = parseFloat((d.total    / d.count).toFixed(2));
+            const maxAvgScore = parseFloat((d.maxTotal / d.count).toFixed(2));
+            return {
+                area, avgScore, maxAvgScore,
+                successRatio: maxAvgScore > 0 ? parseFloat((avgScore / maxAvgScore).toFixed(4)) : 0,
+                count: d.count,
+                observations: d.observations.sort((a, b) => new Date(b.date) - new Date(a.date))
+            };
+        }).sort((a, b) => b.successRatio - a.successRatio);
+
+        res.json({
+            studentId: req.params.studentId,
+            totalObservations: valid.length,
+            totalMaterials: bestObs.length,
+            weightedSuccessRatio,
+            summary
+        });
     } catch (err) {
         res.status(500).json({ error: "Alan özeti alınamadı." });
     }
