@@ -18,7 +18,12 @@ const lessonSchema = new mongoose.Schema({
     },
     minAge: {
         type: Number,
-        default: null // Materyal için önerilen minimum yaş (ay cinsinden); ET formülünde A_min olarak kullanılır
+        default: null // Materyal için önerilen minimum yaş (ay); ET formülünde A_min olarak kullanılır
+    },
+    expectedTimeAtMinAge: {
+        type: Number,
+        default: null // T_ref: minAge anında materyali tamamlamak için beklenen süre (gün)
+                      // ET = max(1, T_ref × (minAge/currentAge)³)
     }
 }, { timestamps: true });
 

@@ -12,7 +12,7 @@ const observationSchema = new mongoose.Schema({
         required: true
     },
     teacherName: {
-        type: String, // O anki girişi yapan öğretmenin adı
+        type: String,
         required: true
     },
     status: {
@@ -25,10 +25,9 @@ const observationSchema = new mongoose.Schema({
         default: Date.now
     },
     // ── Zaman Takibi (ET/vF hesabı için) ──────────────────────────────────
-    // startDate      : Bu materyal için ilk "Sunuldu" kaydının tarihi
+    // startDate      : Materyal ilk "Sunuldu" olarak işaretlendiği tarih
     // completionDate : "Ustalaştı" kaydının tarihi
-    // app.js POST handler tarafından otomatik set edilir;
-    // virtual içinde populate bağımlılığı olmadan erişilebilir.
+    // app.js POST handler tarafından otomatik set edilir.
     startDate: {
         type: Date,
         default: null
@@ -58,102 +57,116 @@ const STATUS_COEFFICIENTS = {
 // ── Yardımcı: clamp ────────────────────────────────────────────────────────
 const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
 
-// ── Yardımcı: Dinamik Beklenen Süre (ET) — gün cinsinden ──────────────────
-// ET = (D² / (A - Amin + 1)) × K
-//   D    : zorluk seviyesi (1-10)
-//   A    : çocuğun yaşı (ay)
-//   Amin : materyalin minimum önerilen yaşı (ay); yoksa 36 default
-//   K    : global ivme sabiti (7 gün)
-function computeET(D, A, Amin, K = 7) {
-    const effectiveAmin = Amin ?? 36;          // minAge yoksa 36 ay default
-    const denominator   = Math.max(1, A - effectiveAmin + 1);
-    return (D * D / denominator) * K;
+// ── Yardımcı: Ay farkı (büyük - küçük tarih) ──────────────────────────────
+function monthDiff(laterDate, earlierDate) {
+    return (laterDate.getFullYear() - earlierDate.getFullYear()) * 12
+         + (laterDate.getMonth()   - earlierDate.getMonth());
 }
 
-// ── Yardımcı: Hız Faktörü (vF) ────────────────────────────────────────────
-// Yalnızca statü "Ustalaştı" olduğunda çağrılır.
+// ── Yardımcı: Üstel Beklenen Süre (ET v2) — gün cinsinden ─────────────────
+// ET = max(1, T_ref × (minAge / currentAge)³)
 //
-// Erken sunum (A < Amin):
-//   ActualTime ≤ ET  →  vF = 1.50 (sabit üstün başarı)
-//   ActualTime >  ET  →  vF = clamp(ET/AT, 0.75, 1.50) (bilişsel hazırlık sinyali)
+//   T_ref      : lesson.expectedTimeAtMinAge — minAge anındaki referans tamamlanma süresi (gün)
+//   minAge     : lesson.minAge (ay)
+//   currentAge : çocuğun materyale başladığı andaki yaşı (ay) — startDate'den hesaplanır
 //
-// Normal / Geç sunum (A >= Amin):
-//   vF = clamp(ET/AT, 0.50, 1.50)
-function computeVF(actualTimeDays, ET, isEarlyPresentation) {
-    if (!actualTimeDays || actualTimeDays <= 0 || !ET || ET <= 0) return 1.0;
+// Yaş farkı arttıkça ET üstel olarak küçülür (büyük çocuktan daha hızlı beklenir).
+// Graceful: T_ref veya minAge yoksa → null döner, vF = 1.0 alınır.
+function computeET(T_ref, minAge, currentAge) {
+    if (!T_ref || !minAge || !currentAge || currentAge <= 0) return null;
+    const ratio = minAge / currentAge;
+    return Math.max(1, T_ref * ratio * ratio * ratio);
+}
+
+// ── Yardımcı: Hız Faktörü (vF v2) ─────────────────────────────────────────
+//
+// Erken Sunum (currentAge < minAge):
+//   ActualTime ≤ T_ref  → vF = 1.50 (Üstün başarı: maksimum bonus)
+//   ActualTime >  T_ref  → vF = 1.00 (Yaşından büyük iş yaptığı için ceza yok)
+//
+// Normal / Geç Sunum (currentAge >= minAge):
+//   vF = clamp(ET / ActualTime, 0.50, 1.50)
+//
+// Graceful: ActualTime ≤ 0 veya ET null → vF = 1.0
+function computeVF(actualTimeDays, ET, T_ref, isEarlyPresentation) {
+    if (!actualTimeDays || actualTimeDays <= 0) return 1.0;
 
     if (isEarlyPresentation) {
-        if (actualTimeDays <= ET) return 1.50;
-        return clamp(ET / actualTimeDays, 0.75, 1.50);
+        // T_ref referans süresi ile karşılaştır (ET değil)
+        return actualTimeDays <= (T_ref || Infinity) ? 1.50 : 1.0;
     }
+
+    if (!ET || ET <= 0) return 1.0;
     return clamp(ET / actualTimeDays, 0.50, 1.50);
 }
 
-// ── Yaş/Kıdem + ET/vF Ayarlı Dinamik Başarı Puanı ─────────────────────────
-// Gerekli populate'lar: .populate('lesson') + .populate('student', 'birthDate enrollmentDate')
-// lesson populate edilmemişse   → null (güvenli çıkış)
-// student populate edilmemişse  → sadece baseScore × statusCoef döner
+// ── Yaş/Kıdem/ET/vF Ayarlı Dinamik Başarı Puanı (v2) ─────────────────────
+// Gerekli populate: .populate('lesson') + .populate('student', 'birthDate enrollmentDate')
+// lesson populate edilmemişse → null
+// student populate edilmemişse → D × coeff döner
+//
+// Adalet Kuralı: Büyük çocuk, kendi ET süresinde bitirdiğinde (vF=1.0),
+//   skoru hiçbir zaman baseScore (= D × coeff) altına düşmez.
+//   Uygulama: adjustedScore = max(D × coeff, D × coeff × ageFactor × seniorityFactor × vF)
 observationSchema.virtual('successScore').get(function () {
 
-    // ── 1. Zorunlu kontrol: lesson populate ───────────────────────────────
+    // ── 1. Zorunlu kontrol ─────────────────────────────────────────────────
     if (!this.lesson || typeof this.lesson !== 'object' || !this.lesson.difficultyLevel) {
         return null;
     }
 
     const D           = this.lesson.difficultyLevel;
     const coefficient = STATUS_COEFFICIENTS[this.status] ?? 0;
-    const baseScore   = D * coefficient;
+    const baseScore   = D * coefficient;  // Adalet Kuralı için taban
 
-    // ── 2. Student populate edilmemişse düz baseScore döner ───────────────
+    // ── 2. Student populate yoksa düz baseScore döner ─────────────────────
     if (!this.student || typeof this.student !== 'object' ||
         !this.student.birthDate || !this.student.enrollmentDate) {
         return parseFloat(baseScore.toFixed(2));
     }
 
-    // ── 3. ageFactor & seniorityFactor (mevcut mantık korunuyor) ──────────
-    const now = new Date();
+    // ── 3. ageFactor (şu anki yaşa göre) & seniorityFactor ────────────────
+    const now   = new Date();
+    const birth = new Date(this.student.birthDate);
 
-    const birth       = new Date(this.student.birthDate);
-    const ageInMonths = (now.getFullYear() - birth.getFullYear()) * 12
-                      + (now.getMonth()   - birth.getMonth());
+    const ageInMonths = monthDiff(now, birth);  // Güncel yaş
 
     const enrolled       = new Date(this.student.enrollmentDate);
-    const monthsInSchool = (now.getFullYear() - enrolled.getFullYear()) * 12
-                         + (now.getMonth()    - enrolled.getMonth());
+    const monthsInSchool = monthDiff(now, enrolled);
 
-    // ageFactor: referans 54 ay (4,5 yaş) — daha genç → daha yüksek çarpan
-    const rawAge    = ageInMonths > 0 ? 54 / ageInMonths : 1;
-    const ageFactor = clamp(rawAge, 0.75, 1.40);
+    // ageFactor: referans 54 ay — genç çocuk daha yüksek çarpan alır
+    const ageFactor = clamp(ageInMonths > 0 ? 54 / ageInMonths : 1, 0.75, 1.40);
 
     // seniorityFactor: ilk 6 ayda hız bonusu, sonrası beklenti artar
-    const rawSen         = 1 + (6 - monthsInSchool) / 24;
-    const seniorityFactor = clamp(rawSen, 0.75, 1.25);
+    const seniorityFactor = clamp(1 + (6 - monthsInSchool) / 24, 0.75, 1.25);
 
-    // ── 4. Statüye göre hesaplama dalı ────────────────────────────────────
-    if (this.status !== 'Ustalaştı') {
-        // Çalışma devam ediyor: vF uygulanmaz
-        const adjusted = baseScore * ageFactor * seniorityFactor;
-        return parseFloat(clamp(adjusted, 0.01, 10.0).toFixed(2));
-    }
+    // ── 4. vF hesabı (yalnızca "Ustalaştı" + tarih verisi varsa) ──────────
+    let vF = 1.0; // Default: graceful degradation
 
-    // ── 5. "Ustalaştı" dalı: ET + vF hesabı ───────────────────────────────
-    const Amin = this.lesson.minAge ?? null;  // null ise computeET içinde 36 default
-
-    // ActualTime: startDate → completionDate arası gün farkı
-    let vF = 1.0; // Graceful degradation: tarih eksikse vF=1.0
-    if (this.startDate && this.completionDate) {
+    if (this.status === 'Ustalaştı' && this.startDate && this.completionDate) {
         const msPerDay       = 1000 * 60 * 60 * 24;
         const actualTimeDays = Math.max(1,
             (new Date(this.completionDate) - new Date(this.startDate)) / msPerDay
         );
-        const ET                = computeET(D, ageInMonths, Amin);
-        const isEarlyPresent    = Amin !== null && ageInMonths < Amin;
-        vF = computeVF(actualTimeDays, ET, isEarlyPresent);
+
+        // currentAge: materyale başladığı andaki yaş (startDate'den hesaplanır)
+        const currentAge = monthDiff(new Date(this.startDate), birth);
+
+        const T_ref  = this.lesson.expectedTimeAtMinAge ?? null;
+        const minAge = this.lesson.minAge               ?? null;
+
+        const ET               = computeET(T_ref, minAge, currentAge > 0 ? currentAge : ageInMonths);
+        const isEarlyPresent   = minAge !== null && currentAge < minAge;
+
+        vF = computeVF(actualTimeDays, ET, T_ref, isEarlyPresent);
     }
 
-    // baseScore "Ustalaştı" için difficultyLevel × 1.0 = D
-    const adjustedMastered = D * ageFactor * seniorityFactor * vF;
-    return parseFloat(clamp(adjustedMastered, 0.1, 10.0).toFixed(2));
+    // ── 5. Final Skor — Adalet Kuralı ile ────────────────────────────────
+    // adjustedScore = clamp( max(baseScore, D × coeff × ageFactor × seniorityFactor × vF), 0.1, 10.0 )
+    const computed  = baseScore * ageFactor * seniorityFactor * vF;
+    const justified = Math.max(baseScore, computed);  // Adalet Kuralı: baseScore tabanı
+
+    return parseFloat(clamp(justified, 0.1, 10.0).toFixed(2));
 });
 
 module.exports = mongoose.model('Observation', observationSchema);

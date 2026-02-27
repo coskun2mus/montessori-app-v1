@@ -71,7 +71,10 @@
                     </div>
                     <div class="col-12">
                         <input type="number" id="lessonMinAge" class="form-control form-control-sm" placeholder="Min. Yaş (ay, opsiyonel — örn: 48)" min="0" max="84">
-                        <div class="form-text" style="font-size:0.68rem;">💡 ET/vF hesabı için kullanılır. Boş bırakılırsa 36 ay varsayılır.</div>
+                    </div>
+                    <div class="col-12">
+                        <input type="number" id="lessonTRef" class="form-control form-control-sm" placeholder="T_ref: minAge’nda beklenen süre (gün, opsiyonel — örn: 21)" min="1">
+                        <div class="form-text" style="font-size:0.68rem;">💡 ET = max(1, T_ref × (minAge/yaş)³). Boş bırakılırsa vF = 1.0 kabul edilir.</div>
                     </div>
                 </div>
                 <button onclick="saveLesson()" class="btn btn-primary btn-sm w-100 mt-2 fw-bold">Materyali Kaydet</button>
@@ -215,27 +218,28 @@
     }
 // --- MATERYAL İŞLEMLERİ ---
 async function saveLesson() {
-    const lessonName = document.getElementById('lessonName').value.trim();
-    const area = document.getElementById('lessonArea').value;
+    const lessonName      = document.getElementById('lessonName').value.trim();
+    const area            = document.getElementById('lessonArea').value;
     const difficultyLevel = parseInt(document.getElementById('lessonDifficulty').value);
-    const minAgeRaw = document.getElementById('lessonMinAge').value.trim();
-    const minAge = minAgeRaw !== '' ? parseInt(minAgeRaw) : null;
+    const minAgeRaw       = document.getElementById('lessonMinAge').value.trim();
+    const tRefRaw         = document.getElementById('lessonTRef').value.trim();
+    const minAge          = minAgeRaw !== '' ? parseInt(minAgeRaw)  : null;
+    const expectedTimeAtMinAge = tRefRaw !== '' ? parseInt(tRefRaw) : null;
 
-    if(!lessonName) return alert("Materyal adı girin!");
+    if (!lessonName) return alert("Materyal adı girin!");
 
     try {
         const res = await fetch('/api/lessons', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ lessonName, area, difficultyLevel, minAge })
+            body: JSON.stringify({ lessonName, area, difficultyLevel, minAge, expectedTimeAtMinAge })
         });
-
         const result = await res.json();
-
-        if(res.ok) {
+        if (res.ok) {
             alert("✅ Materyal başarıyla eklendi");
-            document.getElementById('lessonName').value = '';
+            document.getElementById('lessonName').value  = '';
             document.getElementById('lessonMinAge').value = '';
+            document.getElementById('lessonTRef').value   = '';
             loadManageLessons();
         } else {
             alert("⚠️ " + (result.error || "Bir hata oluştu"));
@@ -260,18 +264,19 @@ async function loadManageLessons() {
         }
 
         lessons.forEach(l => {
-            const minAgeLabel = l.minAge != null ? `Min. Yaş: ${l.minAge}ay` : 'Min. Yaş: —';
+            const minAgeLabel = l.minAge != null ? `${l.minAge}ay` : '—';
+            const tRefLabel   = l.expectedTimeAtMinAge != null ? `Tᵣₑₙ: ${l.expectedTimeAtMinAge}g` : '';
             listContainer.innerHTML += `
                 <div class="material-list-item">
                     <div class="material-content">
                         <span class="badge bg-light text-primary border" style="font-size: 0.7rem; min-width: 85px;">${l.area}</span>
                         <div class="material-name-text">
                             ${l.lessonName}
-                            <small class="text-muted fw-normal">(Zorluk: ${l.difficultyLevel || 1} · ${minAgeLabel})</small>
+                            <small class="text-muted fw-normal">(Zorluk: ${l.difficultyLevel || 1} · Min: ${minAgeLabel}${tRefLabel ? ' · ' + tRefLabel : ''})</small>
                         </div>
                     </div>
                     <div class="material-actions">
-                        <i class="fas fa-edit btn-edit-material" onclick="editLesson('${l._id}', '${l.lessonName}', ${l.difficultyLevel || 1}, ${l.minAge ?? 'null'})"></i>
+                        <i class="fas fa-edit btn-edit-material" onclick="editLesson('${l._id}', '${l.lessonName}', ${l.difficultyLevel || 1}, ${l.minAge ?? 'null'}, ${l.expectedTimeAtMinAge ?? 'null'})"></i>
                         <i class="fas fa-trash btn-delete-material" onclick="deleteLesson('${l._id}', '${l.lessonName}')"></i>
                     </div>
                 </div>`;
@@ -279,15 +284,18 @@ async function loadManageLessons() {
     } catch (err) { console.error("Hata:", err); }
 }
 
-async function editLesson(id, oldName, oldDiff, oldMinAge) {
+async function editLesson(id, oldName, oldDiff, oldMinAge, oldTRef) {
     const newName = prompt("Materyal ismini güncelle:", oldName);
     if (!newName) return;
 
     const newDifficulty = prompt("Zorluk seviyesini güncelle (1-10):", oldDiff || 5);
     if (!newDifficulty || isNaN(newDifficulty)) return alert("Geçerli bir sayı giriniz!");
 
-    const newMinAgeStr = prompt("Min. yaş (ay, boş bırak = belirsiz):", oldMinAge != null ? oldMinAge : '');
+    const newMinAgeStr = prompt("Min. yaş (ay, boş = belirsiz):", oldMinAge != null ? oldMinAge : '');
     const newMinAge = (newMinAgeStr !== null && newMinAgeStr.trim() !== '') ? parseInt(newMinAgeStr) : null;
+
+    const newTRefStr = prompt(`T_ref: minAge’nda beklenen süre (gün, boş = belirsiz):`, oldTRef != null ? oldTRef : '');
+    const newTRef = (newTRefStr !== null && newTRefStr.trim() !== '') ? parseInt(newTRefStr) : null;
 
     const res = await fetch(`/api/lessons/${id}`, {
         method: 'PUT',
@@ -295,11 +303,12 @@ async function editLesson(id, oldName, oldDiff, oldMinAge) {
         body: JSON.stringify({
             lessonName: newName.trim(),
             difficultyLevel: parseInt(newDifficulty),
-            minAge: newMinAge
+            minAge: newMinAge,
+            expectedTimeAtMinAge: newTRef
         })
     });
 
-    if(res.ok) {
+    if (res.ok) {
         alert("✅ Materyal güncellendi!");
         loadManageLessons();
     }
