@@ -1,84 +1,146 @@
-/* Liberum Montessori Akademia - Global Stylesheet 
-   TÜM ÖZELLİKLER GERİ GETİRİLMİŞ EKSİKSİZ VERSİYON 
+/* Liberum Montessori Akademia - High-Status Academic Stylesheet
+   Mondrian & YSL Minimalist Aesthetic
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
-    --liberum-green: #4a5d4e;
-    --liberum-gold: #c5a059;
-    --liberum-light: #fdfaf5;
-    --liberum-dark: #2c3e50;
-    --white: #ffffff;
-    --shadow: rgba(0,0,0,0.1);
+    /* Premium Palette */
+    --liberum-green: #1a3636;  /* Zengin, koyu orman yeşili (YSL) */
+    --liberum-gold: #c5a059;   /* Şampanya/Altın vurgu */
+    --liberum-light: #fbf9f6;  /* Kemik/Kağıt beyazı zemin */
+    --liberum-surface: #ffffff;
+    --liberum-dark: #121212;
+    --liberum-text: #333333;
+    --liberum-text-muted: #737373;
+    --liberum-border: #eae5d9; /* Mondrian gridleri için keskin sınır rengi */
+    
+    /* Subtle Shadow */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
+    --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.06);
+    
+    /* Architectural Geometry */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
 }
 
 body {
     background-color: var(--liberum-light);
-    font-family: 'Poppins', sans-serif;
-    color: var(--liberum-dark);
+    font-family: 'Inter', sans-serif;
+    color: var(--liberum-text);
     margin: 0;
-    padding-bottom: 140px; /* Alt navigasyon için geniş güvenli alan */
+    padding-bottom: 120px;
     overflow-x: hidden;
+    letter-spacing: -0.01em;
 }
 
-/* --- KRİTİK KATMAN (Z-INDEX) YÖNETİMİ --- */
+h1, h2, h3, h4, .school-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--liberum-green);
+    margin-top: 0;
+}
+
+/* --- Z-INDEX Yönetimi --- */
 .selection-container {
     max-width: 500px;
-    margin: -40px auto 40px;
+    margin: -30px auto 40px;
     padding: 0 20px;
     position: relative;
     z-index: 1000; 
 }
-
-/* Modal açıldığında Venüs butonunu modalın arkasına iter */
-body.modal-open .selection-container {
-    z-index: 1 !important; 
-}
-
+body.modal-open .selection-container { z-index: 1 !important; }
 .modal { z-index: 2050 !important; }
 .modal-backdrop { z-index: 2040 !important; }
 
-/* --- HERO BÖLÜMÜ --- */
+/* --- HERO & BAŞLIK BÖLÜMÜ --- */
 .hero-section {
-    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('logo.png');
+    background: linear-gradient(rgba(26, 54, 54, 0.75), rgba(26, 54, 54, 0.9)), url('logo.png');
     background-size: cover;
     background-position: center;
-    height: 380px;
+    height: 320px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     color: var(--white);
-    border-radius: 0 0 50px 50px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    /* Soft kreş yuvarlaklıklarını sildik, dümdüz veya çok hafif kavis */
+    border-radius: 0 0 12px 12px; 
+    border-bottom: 3px solid var(--liberum-gold);
 }
 
 .school-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.5rem, 8vw, 2.5rem);
-    text-shadow: 2px 4px 15px rgba(0,0,0,0.5);
-    padding: 0 20px;
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-/* --- SINIF SEÇİCİ (VENÜS) VE DROPDOWN --- */
+/* --- SINIF SEÇİCİ DROPDOWN (Mondrian Grid) --- */
 .btn-class-selector {
-    background-color: var(--liberum-green);
-    color: var(--white);
-    border: 2px solid var(--white);
-    padding: 16px;
-    border-radius: 50px;
-    font-weight: 600;
+    background-color: var(--liberum-surface);
+    color: var(--liberum-green);
+    border: 1px solid var(--liberum-border);
+    padding: 16px 24px;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.03em;
     width: 100%;
-    box-shadow: 0 15px 35px rgba(74, 93, 78, 0.3);
-    transition: transform 0.3s ease;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
 .btn-class-selector:hover {
-    transform: scale(1.02);
+    border-color: var(--liberum-gold);
+    box-shadow: var(--shadow-hover);
 }
 
-/* SINIF LİSTESİNDE ÖĞRETMEN İSMİ ALTTA DURACAK */
+/* --- ÖĞRENCİ KARTLARI (YSL Keskinliği) --- */
+.student-card {
+    background: var(--liberum-surface);
+    border: 1px solid var(--liberum-border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.2s ease;
+    border-left: 4px solid var(--liberum-green);
+}
+
+.student-card:hover {
+    border-left-color: var(--liberum-gold);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.student-card:active {
+    transform: translateY(0);
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    background: var(--liberum-light);
+    color: var(--liberum-green);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 18px;
+    border: 1px solid var(--liberum-border);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+}
+
 .class-item-content {
     display: flex;
     flex-direction: column;
@@ -86,34 +148,43 @@ body.modal-open .selection-container {
 }
 
 .class-name {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--liberum-green);
-    display: block;
+    font-size: 1.05rem;
 }
 
 .teacher-name {
-    color: #7f8c8d;
-    font-size: 0.85rem;
-    display: block;
-    margin-top: 2px;
+    color: var(--liberum-text-muted);
+    font-size: 0.8rem;
+    margin-top: 4px;
+    letter-spacing: 0.01em;
 }
 
-/* --- AYARLAR SAYFASI: MATERYAL LİSTESİ (GERİ GETİRİLDİ) --- */
-.material-list-item {
+/* --- AYARLAR SAYFASI: MATERYAL & LİSTE (Grid Sistemi) --- */
+.material-list-item, .list-group-item {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding: 12px 15px;
-    background: var(--white);
-    border-radius: 12px;
+    padding: 16px 20px;
+    background: var(--liberum-surface);
+    border-radius: var(--radius-md);
     margin-bottom: 8px;
-    box-shadow: 0 2px 5px var(--shadow);
-    border-left: 5px solid var(--liberum-green);
+    box-shadow: none;
+    border: 1px solid var(--liberum-border);
+    border-left: 3px solid var(--liberum-green);
+    transition: background 0.2s;
+}
+
+.material-list-item:hover, .list-group-item:hover {
+    background: var(--liberum-light);
 }
 
 .material-content {
     flex: 1;
     min-width: 0;
+    color: var(--liberum-text);
+    font-weight: 500;
+    font-size: 0.95rem;
 }
 
 .material-actions {
@@ -123,132 +194,188 @@ body.modal-open .selection-container {
     margin-left: 10px;
 }
 
-.btn-edit-material { color: #3498db; cursor: pointer; }
-.btn-delete-material { color: #e74c3c; cursor: pointer; }
+.btn-edit-material { color: var(--liberum-gold); cursor: pointer; transition: color 0.2s; }
+.btn-delete-material { color: #a93226; cursor: pointer; transition: color 0.2s; }
+.btn-edit-material:hover { color: #b08c45; }
+.btn-delete-material:hover { color: #8a251c; }
 
-/* --- ÖĞRENCİ KARTLARI --- */
-.student-card {
-    background: var(--white);
-    border: none;
-    border-radius: 20px;
-    padding: 15px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 4px 15px var(--shadow);
-    transition: all 0.3s ease;
-    border-left: 5px solid var(--liberum-gold);
+/* Kutu Başlıkları (Card Headers) Settings vb. */
+.card {
+    border: 1px solid var(--liberum-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    background: var(--liberum-surface);
+    margin-bottom: 24px;
 }
 
-.student-card:active {
-    transform: scale(0.97);
-}
-
-.avatar {
-    width: 60px;
-    height: 60px;
-    background: var(--liberum-light);
+.card-header {
+    background: var(--liberum-surface);
+    border-bottom: 1px solid var(--liberum-border);
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
     color: var(--liberum-green);
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    margin-right: 15px;
-    border: 1px solid #eee;
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    border-top-left-radius: var(--radius-md);
+    border-top-right-radius: var(--radius-md);
 }
 
-/* --- ALT NAVİGASYON --- */
+.card-body {
+    padding: 24px;
+}
+
+/* Modallar */
+.modal-content {
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+.modal-header {
+    border-bottom: 1px solid var(--liberum-border);
+    background: var(--liberum-light);
+}
+.modal-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    color: var(--liberum-green);
+}
+.modal-footer {
+    border-top: 1px solid var(--liberum-border);
+}
+
+/* Modal Butonları (Durum Güncellemeleri) */
+.btn-status {
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    background: var(--liberum-surface);
+}
+
+.btn-sunuldu { border-color: #bbdefb; color: #1976d2; }
+.btn-sunuldu:hover { background: #e3f2fd; }
+
+.btn-calisiyor { border-color: #ffe0b2; color: #f57c00; }
+.btn-calisiyor:hover { background: #fff3e0; }
+
+.btn-ustalasti { border-color: #c8e6c9; color: #388e3c; }
+.btn-ustalasti:hover { background: #e8f5e9; }
+
+/* Global Butonlar */
+.btn-primary, .btn-success {
+    background-color: var(--liberum-green);
+    border-color: var(--liberum-green);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 10px 24px;
+}
+.btn-primary:hover, .btn-success:hover {
+    background-color: #122626;
+    border-color: #122626;
+}
+
+/* Form Elemanları */
+.form-control, .form-select {
+    border: 1px solid #d4d0c5;
+    border-radius: var(--radius-sm);
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    color: var(--liberum-text);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--liberum-gold);
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+}
+
+/* --- ALT NAVİGASYON (Minimalist Yüzen Menü) --- */
 .bottom-nav {
     position: fixed;
     bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
     width: 90%;
-    max-width: 450px;
-    padding: 12px;
-    border-radius: 40px;
+    max-width: 480px;
+    padding: 14px 10px;
+    border-radius: 12px;
     display: flex;
     justify-content: space-around;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.08); /* Yumuşak gölge */
     z-index: 1010;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid var(--liberum-border);
 }
 
 .nav-item {
     text-decoration: none;
-    color: #a0aab2;
+    color: var(--liberum-text-muted);
     text-align: center;
     font-size: 0.75rem;
+    font-weight: 500;
     transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
 .nav-item i {
     display: block;
-    font-size: 1.4rem;
-    margin-bottom: 2px;
+    font-size: 1.3rem;
 }
 
 .nav-item.active {
     color: var(--liberum-green);
 }
 
-/* --- MODAL BUTONLARI --- */
-.btn-status {
-    width: 100%;
-    padding: 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    font-weight: 600;
-    border: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.nav-item.active i {
+    color: var(--liberum-gold);
 }
-
-.btn-sunuldu { background-color: #e3f2fd; color: #1976d2; }
-.btn-calisiyor { background-color: #fff3e0; color: #f57c00; }
-.btn-ustalasti { background-color: #e8f5e9; color: #388e3c; }
 
 /* Kaydırma Çubuğu Güzelleştirme */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--liberum-light); }
-::-webkit-scrollbar-thumb { background: #dcdde1; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #cfcdc8; border-radius: 10px; }
 
-/* --- BAŞARI PUANI (successScore) --- */
+/* --- BAŞARI PUANI BARLARI (successScore) --- */
 .score-badge {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 20px;
-    letter-spacing: 0.3px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.05em;
     white-space: nowrap;
-    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
 }
-.score-badge.score-low   { background: #fdecea; color: #c0392b; }
-.score-badge.score-mid   { background: #fef9e7; color: #b7770d; }
-.score-badge.score-high  { background: #eafaf1; color: #1e8449; }
-.score-badge.score-none  { background: #f0f0f0; color: #999; }
+.score-badge.score-low   { border: 1px solid #eba49f; background: #fff; color: #cb4335; }
+.score-badge.score-mid   { border: 1px solid #f1c40f; background: #fff; color: #b7770d; }
+.score-badge.score-high  { border: 1px solid #71b98f; background: #fff; color: #1e8449; }
+.score-badge.score-none  { border: 1px solid #e0e0e0; background: #fff; color: #888; }
 
 .score-bar-wrap {
     flex: 1;
     height: 4px;
-    background: #ebebeb;
-    border-radius: 4px;
+    background: #e8e6df;
+    border-radius: 0px;
     overflow: hidden;
-    min-width: 32px;
-    max-width: 60px;
+    min-width: 40px;
+    max-width: 80px;
 }
 .score-bar-fill {
     height: 100%;
-    border-radius: 4px;
-    transition: width 0.6s ease;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.score-bar-fill.score-low  { background: #e74c3c; }
+.score-bar-fill.score-low  { background: #cb4335; }
 .score-bar-fill.score-mid  { background: #f39c12; }
 .score-bar-fill.score-high { background: #27ae60; }
