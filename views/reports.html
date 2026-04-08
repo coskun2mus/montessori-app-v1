@@ -23,6 +23,10 @@
 </head>
 <body>
 
+<div class="container mt-4">
+    <a href="/" class="btn btn-outline-secondary btn-sm px-3">← Ana Panele Dön</a>
+</div>
+
 <header class="report-hero">
     <h1><i class="fas fa-chart-bar me-2"></i>Gelişim Raporu</h1>
     <p>Öğrenci bazlı alan performans analizi</p>
@@ -154,7 +158,7 @@ async function loadReport(studentId) {
                     <div class="fw-bold" style="font-size:0.9rem;">Ağırlıklı Başarı Oranı</div>
                     <div class="text-muted small mt-1">
                         En güçlü alan: <strong>${AREA_META[bestArea.area]?.icon || ''} ${bestArea.area}</strong>
-                        ( ${bestArea.avgScore.toFixed(1)} / ${bestArea.maxAvgScore.toFixed(1)} — %${(bestArea.successRatio * 100).toFixed(0)} )
+                        ( ${bestArea.avgScore.toFixed(1)} <span style="font-weight:700; color:var(--lib-ink);">/ ${bestArea.maxAvgScore.toFixed(1)}</span> — %${(bestArea.successRatio * 100).toFixed(0)} )
                     </div>
                     <div class="text-muted" style="font-size:0.72rem; margin-top:4px;">
                         ${data.summary.length} alanda ${data.totalMaterials} materyal değerlendirildi.
@@ -241,7 +245,7 @@ async function loadReport(studentId) {
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="area-avg score-${t}">${area.avgScore.toFixed(1)}<span style="font-size:0.6rem;font-weight:400;color:#aaa;">/${area.maxAvgScore.toFixed(1)}</span></span>
+                        <span class="area-avg score-${t}">${area.avgScore.toFixed(1)}<span style="font-weight:700; color:var(--lib-ink);">/${area.maxAvgScore.toFixed(1)}</span></span>
                         <i class="fas fa-chevron-down text-muted" style="font-size:0.75rem;" id="icon-${cardId}"></i>
                     </div>
                 </div>
@@ -250,7 +254,7 @@ async function loadReport(studentId) {
                         <div class="obs-row">
                             <span class="obs-lesson" title="${o.lessonName}">${o.lessonName}</span>
                             <span class="obs-pill ${PILL_MAP[o.status] || 'bg-secondary text-white'}">${o.status}</span>
-                            <span class="obs-score score-${ratioTier(o.score / o.maxScore)}">${o.score.toFixed(1)}<span style="font-size:0.55rem;color:#bbb;">/${o.maxScore.toFixed(1)}</span></span>
+                            <span class="obs-score score-${ratioTier(o.score / o.maxScore)}">${o.score.toFixed(1)}<span style="font-weight:700; color:var(--lib-ink);">/${o.maxScore.toFixed(1)}</span></span>
                         </div>`).join('')}
                 </div>`;
             container.appendChild(card);
