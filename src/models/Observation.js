@@ -63,19 +63,40 @@ function monthDiff(laterDate, earlierDate) {
          + (laterDate.getMonth()   - earlierDate.getMonth());
 }
 
-// ── Yardımcı: Üstel Beklenen Süre (ET v2) — gün cinsinden ─────────────────
-// ET = max(1, T_ref × (minAge / currentAge)³)
-//
-//   T_ref      : lesson.expectedTimeAtMinAge — minAge anındaki referans tamamlanma süresi (gün)
-//   minAge     : lesson.minAge (ay)
-//   currentAge : çocuğun materyale başladığı andaki yaşı (ay) — startDate'den hesaplanır
-//
-// Yaş farkı arttıkça ET üstel olarak küçülür (büyük çocuktan daha hızlı beklenir).
-// Graceful: T_ref veya minAge yoksa → null döner, vF = 1.0 alınır.
-function computeET(T_ref, minAge, currentAge) {
-    if (!T_ref || !minAge || !currentAge || currentAge <= 0) return null;
-    const ratio = minAge / currentAge;
-    return Math.max(1, T_ref * ratio * ratio * ratio);
+// ── ET Model V6 Sabitleri (Pedagojik Vites Optimizasyonu) ─────────────────
+const K_V5 = {
+    "VERY_EASY": { k1: 0.170, k2: 0.000, k3: 0.000 },
+    "EASY":      { k1: 0.056, k2: 0.208, k3: 0.005 },
+    "LIGHT":     { k1: 0.116, k2: 0.168, k3: 0.000 },
+    "MEDIUM":    { k1: 0.040, k2: 0.152, k3: 0.150 },
+    "HEAVY":     { k1: 0.078, k2: 0.056, k3: 0.000 },
+    "HARD":      { k1: 0.058, k2: 0.056, k3: 0.275 }
+};
+
+function getCat(D) {
+    if (D <= 0.4) return "VERY_EASY";
+    if (D <= 0.8) return "EASY";
+    if (D <= 1.2) return "LIGHT";
+    if (D <= 2.2) return "MEDIUM";
+    if (D < 3.0)  return "HEAVY";
+    return "HARD";
+}
+
+// ── Yardımcı: Üstel Beklenen Süre (ET v6) — gün cinsinden ─────────────────
+// ET = TA * e^(-(k * alfa) * (X - A))
+// Graceful: T_ref yoksa → null döner, vF = 1.0 alınır.
+function computeET(T_ref, currentAge, difficultyCat, alfa = 1.0) {
+    if (!T_ref || !currentAge || currentAge <= 0) return null;
+    
+    const k = K_V5[difficultyCat] || K_V5["MEDIUM"];
+    let et = T_ref; 
+    const X = currentAge;
+    
+    if (X > 24) { const to = Math.min(X, 36); et *= Math.exp(-(k.k1 * alfa) * (to - 24)); }
+    if (X > 36) { const to = Math.min(X, 48); et *= Math.exp(-(k.k2 * alfa) * (to - 36)); }
+    if (X > 48) { const to = Math.min(X, 60); et *= Math.exp(-(k.k3 * alfa) * (to - 48)); }
+    
+    return Math.max(1, et);
 }
 
 // ── Yardımcı: Hız Faktörü (vF v2) ─────────────────────────────────────────
@@ -154,9 +175,13 @@ observationSchema.virtual('successScore').get(function () {
 
         const T_ref  = this.lesson.expectedTimeAtMinAge ?? null;
         const minAge = this.lesson.minAge               ?? null;
+        const D_level= this.lesson.difficultyLevel      ?? 1.0;
+        const alfa   = this.lesson.alfa                 ?? 1.0; 
+        const cat    = getCat(D_level);
 
-        const ET               = computeET(T_ref, minAge, currentAge > 0 ? currentAge : ageInMonths);
-        const isEarlyPresent   = minAge !== null && currentAge < minAge;
+        const activeAge        = currentAge > 0 ? currentAge : ageInMonths;
+        const ET               = computeET(T_ref, activeAge, cat, alfa);
+        const isEarlyPresent   = minAge !== null && activeAge < minAge;
 
         vF = computeVF(actualTimeDays, ET, T_ref, isEarlyPresent);
     }

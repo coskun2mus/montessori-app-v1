@@ -23,7 +23,10 @@ const lessonSchema = new mongoose.Schema({
     expectedTimeAtMinAge: {
         type: Number,
         default: null // T_ref: minAge anında materyali tamamlamak için beklenen süre (gün)
-                      // ET = max(1, T_ref × (minAge/currentAge)³)
+    },
+    alfa: {
+        type: Number,
+        default: 1.0 // Pedagojik vites (Örn: Hızlı ilerlenen materyaller için 1.45, yavaş olanlar için 0.65)
     }
 }, { timestamps: true });
 
