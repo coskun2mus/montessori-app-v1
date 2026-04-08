@@ -1,144 +1,168 @@
-/* Liberum Montessori Akademia - High-Status Academic Stylesheet
-   Mondrian & YSL Minimalist Aesthetic
-*/
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIBERUM MONTESSORI AKADEMİA — Premium Dijital Deneyim
+   Mondrian Asimetri × YSL Rafinesi × Montessori Dokunsal Felsefesi
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
+/* ─── TASARIM SİSTEMİ ──────────────────────────────────────────────────── */
 :root {
-    /* Premium Palette */
-    --liberum-green: #1a3636;  /* Zengin, koyu orman yeşili (YSL) */
-    --liberum-gold: #c5a059;   /* Şampanya/Altın vurgu */
-    --liberum-light: #fbf9f6;  /* Kemik/Kağıt beyazı zemin */
-    --liberum-surface: #ffffff;
-    --liberum-dark: #121212;
-    --liberum-text: #333333;
-    --liberum-text-muted: #737373;
-    --liberum-border: #eae5d9; /* Mondrian gridleri için keskin sınır rengi */
-    
-    /* Subtle Shadow */
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
-    --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.06);
-    
-    /* Architectural Geometry */
-    --radius-sm: 2px;
-    --radius-md: 4px;
-    --radius-lg: 8px;
+    /* Kurumsal Palet — Liberum'un ruhu */
+    --lib-forest:    #1b2f2b;   /* Ana yeşil — derin orman */
+    --lib-sage:      #3d5a4c;   /* Orta yeşil — adaçayı */
+    --lib-champagne: #c5a059;   /* Altın vurgu — şampanya */
+    --lib-gold-soft: #d4b873;   /* Yumuşak altın */
+    --lib-bone:      #f7f4ee;   /* Kemik kâğıt — ana zemin */
+    --lib-cream:     #faf8f4;   /* Krem — kart yüzeyi */
+    --lib-ivory:     #fffdf8;   /* Fildişi — vurgulu yüzey */
+    --lib-ink:       #1a1a1a;   /* Mürekkep siyahı — metin */
+    --lib-graphite:  #4a4a4a;   /* Grafit — ikincil metin */
+    --lib-stone:     #8a8578;   /* Taş gri — gölgesel metin */
+    --lib-line:      #e2ddd3;   /* Mondrian çizgisi — yapısal ayırıcılar */
+    --lib-line-bold: #c9c2b5;   /* Kalın yapısal çizgi */
+
+    /* Montessori Alan Renkleri — gerçek sınıf materyallerinden */
+    --area-gunluk:    #8B6914;  /* Pratik Hayat — sıcak ahşap */
+    --area-duyusal:   #A0522D;  /* Duyusal — pembe kule, sienna */
+    --area-dil:       #2E5A88;  /* Dil — mavi sandpaper letter */
+    --area-matematik: #2D6B4F;  /* Matematik — yeşil boncuklar */
+    --area-kultur:    #6B4C8A;  /* Kültür — küre moru */
+
+    /* Gölge Katmanları — kâğıt derinliği */
+    --shadow-paper:  0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    --shadow-lifted: 0 2px 8px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.04);
+    --shadow-float:  0 4px 16px rgba(0,0,0,0.08), 0 20px 40px rgba(0,0,0,0.05);
+
+    /* Geometri — Mondrian keskinliği */
+    --radius-none: 0px;
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+
+    /* Geçişler */
+    --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ─── TEMEL TİPOGRAFİ ──────────────────────────────────────────────────── */
 body {
-    background-color: var(--liberum-light);
-    font-family: 'Inter', sans-serif;
-    color: var(--liberum-text);
+    background-color: var(--lib-bone);
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--lib-ink);
     margin: 0;
-    padding-bottom: 120px;
+    padding-bottom: 110px;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
     letter-spacing: -0.01em;
+    line-height: 1.55;
 }
 
-h1, h2, h3, h4, .school-title {
-    font-family: 'Playfair Display', serif;
-    color: var(--liberum-green);
-    margin-top: 0;
+h1, h2, h3, h4, .school-title, .modal-title {
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+    color: var(--lib-forest);
+    font-weight: 600;
+    letter-spacing: 0.01em;
 }
 
-/* --- Z-INDEX Yönetimi --- */
+/* ─── Z-INDEX KATMANLARI ───────────────────────────────────────────────── */
 .selection-container {
-    max-width: 500px;
-    margin: -30px auto 40px;
-    padding: 0 20px;
+    max-width: 480px;
+    margin: -28px auto 36px;
+    padding: 0 24px;
     position: relative;
-    z-index: 1000; 
+    z-index: 1000;
 }
 body.modal-open .selection-container { z-index: 1 !important; }
-.modal { z-index: 2050 !important; }
+.modal       { z-index: 2050 !important; }
 .modal-backdrop { z-index: 2040 !important; }
 
-/* --- HERO & BAŞLIK BÖLÜMÜ --- */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 1: ANA PANEL (index.html) — Öğrenci Kartları
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── HERO — Kara Tahta Kompozisyonu ────────────────────────────────────── */
 .hero-section {
-    background: linear-gradient(rgba(26, 54, 54, 0.75), rgba(26, 54, 54, 0.9)), url('logo.png');
+    background: linear-gradient(
+        170deg,
+        rgba(27,47,43,0.82) 0%,
+        rgba(27,47,43,0.92) 50%,
+        rgba(27,47,43,0.78) 100%
+    ), url('logo.png');
     background-size: cover;
-    background-position: center;
-    height: 320px;
+    background-position: center 30%;
+    height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
     text-align: center;
-    color: var(--white);
-    /* Soft kreş yuvarlaklıklarını sildik, dümdüz veya çok hafif kavis */
-    border-radius: 0 0 12px 12px; 
-    border-bottom: 3px solid var(--liberum-gold);
+    color: #fff;
+    border-radius: 0;
+    border-bottom: 3px solid var(--lib-champagne);
+    position: relative;
+}
+.hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(transparent, var(--lib-bone));
+    pointer-events: none;
 }
 
 .school-title {
-    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 7vw, 3.2rem);
     font-weight: 600;
-    letter-spacing: 0.02em;
+    font-style: italic;
     color: #ffffff;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    letter-spacing: 0.04em;
+    margin: 0;
 }
 
-/* --- SINIF SEÇİCİ DROPDOWN (Mondrian Grid) --- */
+/* ─── SINIF SEÇİCİ ─────────────────────────────────────────────────────── */
 .btn-class-selector {
-    background-color: var(--liberum-surface);
-    color: var(--liberum-green);
-    border: 1px solid var(--liberum-border);
-    padding: 16px 24px;
-    border-radius: var(--radius-md);
-    font-weight: 500;
+    background: var(--lib-ivory);
+    color: var(--lib-forest);
+    border: 1.5px solid var(--lib-line);
+    padding: 14px 24px;
+    border-radius: var(--radius-xs);
     font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
     letter-spacing: 0.03em;
     width: 100%;
-    box-shadow: var(--shadow-soft);
-    transition: all 0.3s ease;
+    box-shadow: var(--shadow-paper);
+    transition: all 0.25s var(--ease-out);
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
+    cursor: pointer;
 }
-
 .btn-class-selector:hover {
-    border-color: var(--liberum-gold);
-    box-shadow: var(--shadow-hover);
+    border-color: var(--lib-champagne);
+    box-shadow: var(--shadow-lifted);
 }
 
-/* --- ÖĞRENCİ KARTLARI (YSL Keskinliği) --- */
-.student-card {
-    background: var(--liberum-surface);
-    border: 1px solid var(--liberum-border);
-    border-radius: var(--radius-md);
-    padding: 18px 20px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    box-shadow: var(--shadow-soft);
-    transition: all 0.2s ease;
-    border-left: 4px solid var(--liberum-green);
+/* Dropdown Menü — keskin hatlar */
+.dropdown-menu {
+    border: 1px solid var(--lib-line) !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-float) !important;
+    background: var(--lib-ivory) !important;
+    padding: 6px !important;
 }
-
-.student-card:hover {
-    border-left-color: var(--liberum-gold);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
+.dropdown-item {
+    border-radius: var(--radius-xs) !important;
+    padding: 10px 14px !important;
+    font-size: 0.9rem;
+    transition: background 0.15s;
 }
-
-.student-card:active {
-    transform: translateY(0);
-}
-
-.avatar {
-    width: 50px;
-    height: 50px;
-    background: var(--liberum-light);
-    color: var(--liberum-green);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    margin-right: 18px;
-    border: 1px solid var(--liberum-border);
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
+.dropdown-item:hover {
+    background: var(--lib-bone) !important;
 }
 
 .class-item-content {
@@ -146,236 +170,616 @@ body.modal-open .selection-container { z-index: 1 !important; }
     flex-direction: column;
     align-items: flex-start;
 }
-
 .class-name {
-    font-weight: 600;
-    color: var(--liberum-green);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
     font-size: 1.05rem;
+    color: var(--lib-forest);
 }
-
 .teacher-name {
-    color: var(--liberum-text-muted);
-    font-size: 0.8rem;
-    margin-top: 4px;
-    letter-spacing: 0.01em;
+    color: var(--lib-stone);
+    font-size: 0.78rem;
+    margin-top: 2px;
+    font-style: italic;
 }
 
-/* --- AYARLAR SAYFASI: MATERYAL & LİSTE (Grid Sistemi) --- */
-.material-list-item, .list-group-item {
+/* ─── ÖĞRENCİ KARTLARI — Dokunsal Kâğıt ────────────────────────────────── */
+.student-card {
+    background: var(--lib-cream);
+    border: 1px solid var(--lib-line);
+    border-left: 4px solid var(--lib-sage);
+    border-radius: var(--radius-xs);
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    box-shadow: var(--shadow-paper);
+    transition: all 0.3s var(--ease-out);
+    cursor: pointer;
+    position: relative;
+}
+.student-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, transparent 92%, var(--lib-champagne) 92%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+.student-card:hover {
+    border-left-color: var(--lib-champagne);
+    box-shadow: var(--shadow-lifted);
+    transform: translateY(-2px);
+}
+.student-card:hover::before { opacity: 0.08; }
+.student-card:active { transform: translateY(0); }
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    background: var(--lib-forest);
+    color: var(--lib-champagne);
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-right: 16px;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 2: YÖNETİM PANELİ (settings.html) — Mondrian Grid
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Kart Sistemi — Mondrian Yapısal Bölünme */
+.card {
+    background: var(--lib-cream);
+    border: 1px solid var(--lib-line);
+    border-radius: var(--radius-xs);
+    box-shadow: var(--shadow-paper);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.card-header, .admin-card h5 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: var(--lib-forest);
+    padding: 16px 20px 12px;
+    border-bottom: 2px solid var(--lib-line);
+    background: transparent;
+    margin-bottom: 0;
+}
+.card-body { padding: 20px; }
+
+/* Mondrian Yapısal Çubuklar — border renklerini Montessori alanlarına bağla */
+.admin-card {
+    border-radius: var(--radius-xs) !important;
+    box-shadow: var(--shadow-paper) !important;
+    border: 1px solid var(--lib-line) !important;
+    background: var(--lib-cream) !important;
+    position: relative;
+    overflow: hidden;
+}
+/* Sol kenardaki renkli şerit: Mondrian compositional line */
+.admin-card.border-start { border-left-width: 4px !important; }
+.border-warning  { border-color: var(--area-gunluk) !important; }
+.border-success  { border-color: var(--area-matematik) !important; }
+.border-primary  { border-color: var(--area-dil) !important; }
+.border-danger   { border-color: var(--area-duyusal) !important; }
+.border-info     { border-color: var(--area-kultur) !important; }
+
+/* Başlık renklerini Montessori alanlarına bağla */
+.text-warning  { color: var(--area-gunluk)    !important; }
+.text-success  { color: var(--area-matematik) !important; }
+.text-primary  { color: var(--area-dil)       !important; }
+.text-danger   { color: var(--area-duyusal)   !important; }
+.text-info     { color: var(--area-kultur)    !important; }
+
+/* Materyal Listesi */
+.material-list-item {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding: 16px 20px;
-    background: var(--liberum-surface);
-    border-radius: var(--radius-md);
-    margin-bottom: 8px;
+    padding: 14px 18px;
+    background: var(--lib-ivory);
+    border-radius: 0;
+    margin-bottom: 0;
     box-shadow: none;
-    border: 1px solid var(--liberum-border);
-    border-left: 3px solid var(--liberum-green);
-    transition: background 0.2s;
+    border: none;
+    border-bottom: 1px solid var(--lib-line);
+    border-left: 3px solid var(--lib-sage);
+    transition: all 0.2s;
 }
-
-.material-list-item:hover, .list-group-item:hover {
-    background: var(--liberum-light);
+.material-list-item:last-child { border-bottom: none; }
+.material-list-item:hover {
+    background: var(--lib-bone);
+    border-left-color: var(--lib-champagne);
 }
 
 .material-content {
     flex: 1;
     min-width: 0;
-    color: var(--liberum-text);
-    font-weight: 500;
-    font-size: 0.95rem;
+    color: var(--lib-graphite);
+    font-weight: 400;
+    font-size: 0.9rem;
 }
 
 .material-actions {
     display: flex;
-    gap: 15px;
+    gap: 14px;
     flex-shrink: 0;
-    margin-left: 10px;
+    margin-left: 12px;
+}
+.btn-edit-material { color: var(--lib-champagne); cursor: pointer; transition: color 0.2s; }
+.btn-delete-material { color: var(--area-duyusal); cursor: pointer; transition: color 0.2s; opacity: 0.5; }
+.btn-edit-material:hover { color: var(--lib-forest); }
+.btn-delete-material:hover { opacity: 1; }
+
+/* Liste Elemanları */
+.list-group-item {
+    background: var(--lib-ivory) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--lib-line) !important;
+    border-left: 3px solid var(--lib-sage) !important;
+    border-radius: 0 !important;
+    padding: 13px 18px !important;
+    transition: all 0.2s;
+}
+.list-group-item:hover {
+    background: var(--lib-bone) !important;
+    border-left-color: var(--lib-champagne) !important;
 }
 
-.btn-edit-material { color: var(--liberum-gold); cursor: pointer; transition: color 0.2s; }
-.btn-delete-material { color: #a93226; cursor: pointer; transition: color 0.2s; }
-.btn-edit-material:hover { color: #b08c45; }
-.btn-delete-material:hover { color: #8a251c; }
 
-/* Kutu Başlıkları (Card Headers) Settings vb. */
-.card {
-    border: 1px solid var(--liberum-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-soft);
-    background: var(--liberum-surface);
-    margin-bottom: 24px;
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 3: GLOBAL FORM & BUTON SİSTEMİ
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Form Elemanları — Montessori sandpaper letter dokusu */
+.form-control, .form-select {
+    border: 1px solid var(--lib-line);
+    border-radius: var(--radius-xs);
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--lib-ink);
+    background: var(--lib-ivory);
+    transition: all 0.2s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--lib-champagne);
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.12);
+    background: #fff;
+}
+.form-control::placeholder { color: var(--lib-stone); font-weight: 300; }
+
+label.small, .form-text {
+    font-size: 0.78rem;
+    color: var(--lib-stone);
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
-.card-header {
-    background: var(--liberum-surface);
-    border-bottom: 1px solid var(--liberum-border);
-    font-family: 'Playfair Display', serif;
-    font-weight: 600;
-    color: var(--liberum-green);
-    padding: 16px 20px;
-    font-size: 1.1rem;
-    border-top-left-radius: var(--radius-md);
-    border-top-right-radius: var(--radius-md);
+/* Butonlar — Premium flat */
+.btn-primary, .btn-success, .btn-warning {
+    background: var(--lib-forest) !important;
+    border: none !important;
+    border-radius: var(--radius-xs) !important;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 11px 24px;
+    color: #fff !important;
+    transition: all 0.25s var(--ease-out);
+    box-shadow: none;
+}
+.btn-primary:hover, .btn-success:hover, .btn-warning:hover {
+    background: var(--lib-sage) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lifted);
 }
 
-.card-body {
-    padding: 24px;
+.btn-outline-secondary {
+    border: 1px solid var(--lib-line) !important;
+    color: var(--lib-graphite) !important;
+    border-radius: var(--radius-xs) !important;
+    font-size: 0.82rem;
+    background: transparent !important;
+}
+.btn-outline-secondary:hover {
+    background: var(--lib-bone) !important;
+    border-color: var(--lib-champagne) !important;
 }
 
-/* Modallar */
+/* Area badge — küçük alan etiketi */
+.badge.bg-light {
+    background: var(--lib-bone) !important;
+    border: 1px solid var(--lib-line) !important;
+    color: var(--lib-forest) !important;
+    border-radius: var(--radius-xs) !important;
+    font-weight: 500;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.04em;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 4: MODALLER — Gözlem Penceresi
+   ═══════════════════════════════════════════════════════════════════════════ */
 .modal-content {
     border: none;
-    border-radius: var(--radius-md);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-float);
+    background: var(--lib-cream);
+    border-top: 3px solid var(--lib-champagne);
 }
 .modal-header {
-    border-bottom: 1px solid var(--liberum-border);
-    background: var(--liberum-light);
+    border-bottom: 1px solid var(--lib-line);
+    background: transparent;
+    padding: 18px 24px 14px;
 }
 .modal-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Cormorant Garamond', serif;
     font-weight: 600;
-    color: var(--liberum-green);
+    font-size: 1.3rem;
+    color: var(--lib-forest);
 }
-.modal-footer {
-    border-top: 1px solid var(--liberum-border);
-}
+.modal-body { padding: 24px; }
 
-/* Modal Butonları (Durum Güncellemeleri) */
+/* Durum Butonları — Montessori İlerleme Çizgisi */
 .btn-status {
     width: 100%;
-    padding: 16px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 12px;
+    padding: 14px 18px;
+    border-radius: var(--radius-xs);
+    margin-bottom: 8px;
     font-weight: 500;
     font-family: 'Inter', sans-serif;
-    border: 1px solid transparent;
+    font-size: 0.88rem;
+    border: 1.5px solid transparent;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s;
-    background: var(--liberum-surface);
-}
-
-.btn-sunuldu { border-color: #bbdefb; color: #1976d2; }
-.btn-sunuldu:hover { background: #e3f2fd; }
-
-.btn-calisiyor { border-color: #ffe0b2; color: #f57c00; }
-.btn-calisiyor:hover { background: #fff3e0; }
-
-.btn-ustalasti { border-color: #c8e6c9; color: #388e3c; }
-.btn-ustalasti:hover { background: #e8f5e9; }
-
-/* Global Butonlar */
-.btn-primary, .btn-success {
-    background-color: var(--liberum-green);
-    border-color: var(--liberum-green);
-    border-radius: var(--radius-md);
-    font-weight: 500;
+    transition: all 0.2s var(--ease-out);
+    background: var(--lib-ivory);
     letter-spacing: 0.02em;
-    padding: 10px 24px;
-}
-.btn-primary:hover, .btn-success:hover {
-    background-color: #122626;
-    border-color: #122626;
 }
 
-/* Form Elemanları */
-.form-control, .form-select {
-    border: 1px solid #d4d0c5;
-    border-radius: var(--radius-sm);
-    padding: 12px 15px;
-    font-size: 0.95rem;
-    color: var(--liberum-text);
-}
-.form-control:focus, .form-select:focus {
-    border-color: var(--liberum-gold);
-    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
-}
+.btn-sunuldu { border-color: var(--lib-line); color: var(--area-dil); }
+.btn-sunuldu:hover { background: #e8eef5; border-color: var(--area-dil); }
 
-/* --- ALT NAVİGASYON (Minimalist Yüzen Menü) --- */
+.btn-calisiyor { border-color: var(--lib-line); color: var(--area-gunluk); }
+.btn-calisiyor:hover { background: #f5efe3; border-color: var(--area-gunluk); }
+
+.btn-ustalasti { border-color: var(--lib-line); color: var(--area-matematik); }
+.btn-ustalasti:hover { background: #e5f0ea; border-color: var(--area-matematik); }
+
+.border-warning.btn-status { border-color: var(--lib-line); color: var(--area-duyusal); }
+.border-warning.btn-status:hover { background: #f5e8e3; border-color: var(--area-duyusal); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 5: ALT NAVİGASYON — Yüzen Çubuk
+   ═══════════════════════════════════════════════════════════════════════════ */
 .bottom-nav {
     position: fixed;
-    bottom: 25px;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    width: 90%;
-    max-width: 480px;
-    padding: 14px 10px;
-    border-radius: 12px;
+    background: var(--lib-ivory);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    width: 88%;
+    max-width: 420px;
+    padding: 10px 8px;
+    border-radius: var(--radius-sm);
     display: flex;
     justify-content: space-around;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.08); /* Yumuşak gölge */
+    box-shadow: var(--shadow-float);
     z-index: 1010;
-    border: 1px solid var(--liberum-border);
+    border: 1px solid var(--lib-line);
 }
 
 .nav-item {
     text-decoration: none;
-    color: var(--liberum-text-muted);
+    color: var(--lib-stone);
     text-align: center;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
-    transition: 0.3s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.25s;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    padding: 6px 12px;
+    border-radius: var(--radius-xs);
 }
-
 .nav-item i {
     display: block;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
 }
-
+.nav-item:hover {
+    color: var(--lib-forest);
+    background: var(--lib-bone);
+}
 .nav-item.active {
-    color: var(--liberum-green);
+    color: var(--lib-forest);
+    background: var(--lib-bone);
 }
-
 .nav-item.active i {
-    color: var(--liberum-gold);
+    color: var(--lib-champagne);
 }
 
-/* Kaydırma Çubuğu Güzelleştirme */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--liberum-light); }
-::-webkit-scrollbar-thumb { background: #cfcdc8; border-radius: 10px; }
 
-/* --- BAŞARI PUANI BARLARI (successScore) --- */
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 6: RAPOR SAYFASI (reports.html) — Akademik Gösterge
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Report Hero — Gradient kaldırıldı, yapısal zemin */
+.report-hero {
+    background: linear-gradient(
+        170deg,
+        var(--lib-forest) 0%,
+        var(--lib-sage) 60%,
+        #4a6a56 100%
+    );
+    padding: 44px 20px 72px;
+    text-align: center;
+    color: #fff;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 3px solid var(--lib-champagne);
+    position: relative;
+}
+.report-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, var(--lib-bone));
+    pointer-events: none;
+}
+.report-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 600;
+    font-style: italic;
+    text-shadow: none;
+    letter-spacing: 0.02em;
+    color: #fff;
+}
+.report-hero p { opacity: 0.7; font-size: 0.82rem; font-weight: 300; letter-spacing: 0.04em; }
+
+/* Öğrenci Seçici */
+.student-picker {
+    margin: -32px auto 28px;
+    max-width: 460px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 100;
+}
+.student-picker select {
+    border-radius: var(--radius-xs);
+    padding: 14px 20px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--lib-line);
+    box-shadow: var(--shadow-lifted);
+    background: var(--lib-ivory);
+    color: var(--lib-forest);
+    appearance: none;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+}
+.student-picker select:focus {
+    border-color: var(--lib-champagne);
+    box-shadow: var(--shadow-float);
+}
+.picker-icon { right: 36px; color: var(--lib-champagne); }
+
+/* İstatistik Kartları */
+.stat-card {
+    background: var(--lib-cream);
+    border-radius: var(--radius-xs);
+    padding: 18px 12px;
+    box-shadow: var(--shadow-paper);
+    text-align: center;
+    border: 1px solid var(--lib-line);
+    border-top: 3px solid var(--lib-champagne);
+}
+.stat-card .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--lib-forest);
+    line-height: 1;
+}
+.stat-card .stat-label {
+    font-size: 0.65rem;
+    color: var(--lib-stone);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+}
+
+/* Genel Başarı Ring */
+.global-ring-wrap {
+    background: var(--lib-cream);
+    border-radius: var(--radius-xs);
+    box-shadow: var(--shadow-paper);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid var(--lib-line);
+    border-left: 4px solid var(--lib-champagne);
+}
+.global-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    border: 4px solid;
+    transition: border-color 0.4s;
+}
+.global-ring small { font-size: 0.48rem; font-weight: 500; opacity: 0.6; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
+.ring-low  { border-color: var(--area-duyusal); color: var(--area-duyusal); background: #fdf5f3; }
+.ring-mid  { border-color: var(--area-gunluk);  color: var(--area-gunluk);  background: #fdf8f0; }
+.ring-high { border-color: var(--area-matematik); color: var(--area-matematik); background: #f2f8f5; }
+
+/* Chart kartı */
+.chart-card {
+    background: var(--lib-cream);
+    border-radius: var(--radius-xs);
+    box-shadow: var(--shadow-paper);
+    padding: 20px;
+    border: 1px solid var(--lib-line);
+}
+.chart-card h6 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--lib-stone);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 16px;
+}
+
+/* Alan Kartları */
+.area-card {
+    background: var(--lib-cream);
+    border-radius: var(--radius-xs);
+    box-shadow: var(--shadow-paper);
+    overflow: hidden;
+    border: 1px solid var(--lib-line);
+}
+.area-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.area-header:hover { background: var(--lib-bone); }
+.area-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-xs);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0; margin-right: 12px;
+}
+.area-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--lib-forest);
+}
+.area-count { font-size: 0.68rem; color: var(--lib-stone); font-weight: 400; margin-top: 1px; }
+.area-avg {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Score renkleri — alan bazlı */
+.score-low  { color: var(--area-duyusal) !important; }
+.score-mid  { color: var(--area-gunluk) !important; }
+.score-high { color: var(--area-matematik) !important; }
+
+/* Gözlem listesi */
+.obs-list { padding: 0 18px 12px; border-top: 1px solid var(--lib-line); }
+.obs-row {
+    display: flex; align-items: center;
+    gap: 8px; padding: 8px 0;
+    border-bottom: 1px solid var(--lib-line);
+}
+.obs-row:last-child { border-bottom: none; }
+.obs-lesson { font-size: 0.78rem; color: var(--lib-graphite); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obs-pill {
+    font-size: 0.6rem; font-weight: 600; padding: 3px 8px;
+    border-radius: var(--radius-xs); white-space: nowrap; flex-shrink: 0;
+    letter-spacing: 0.03em;
+}
+.pill-Sunuldu     { background: #eaf0f7; color: var(--area-dil); }
+.pill-Calisiyor   { background: #f5efe3; color: var(--area-gunluk); }
+.pill-HataKontrol { background: #f5e8e5; color: var(--area-duyusal); }
+.pill-Ustalasti   { background: #e5f0ea; color: var(--area-matematik); }
+.obs-score { font-size: 0.72rem; font-weight: 600; flex-shrink: 0; font-family: 'Inter', sans-serif; }
+
+.empty-state { text-align: center; padding: 60px 20px; opacity: 0.4; }
+.empty-state i { font-size: 2.5rem; margin-bottom: 12px; color: var(--lib-sage); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 7: BAŞARI PUANI SİSTEMİ (successScore)
+   ═══════════════════════════════════════════════════════════════════════════ */
 .score-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 0.65rem;
+    gap: 4px;
+    font-size: 0.62rem;
     font-weight: 600;
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
-    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: var(--radius-xs);
+    letter-spacing: 0.04em;
     white-space: nowrap;
     font-family: 'Inter', sans-serif;
+    border: 1px solid;
+    background: var(--lib-ivory);
 }
-.score-badge.score-low   { border: 1px solid #eba49f; background: #fff; color: #cb4335; }
-.score-badge.score-mid   { border: 1px solid #f1c40f; background: #fff; color: #b7770d; }
-.score-badge.score-high  { border: 1px solid #71b98f; background: #fff; color: #1e8449; }
-.score-badge.score-none  { border: 1px solid #e0e0e0; background: #fff; color: #888; }
+.score-badge.score-low  { border-color: var(--area-duyusal); color: var(--area-duyusal); }
+.score-badge.score-mid  { border-color: var(--area-gunluk);  color: var(--area-gunluk); }
+.score-badge.score-high { border-color: var(--area-matematik); color: var(--area-matematik); }
+.score-badge.score-none { border-color: var(--lib-line); color: var(--lib-stone); }
 
 .score-bar-wrap {
     flex: 1;
-    height: 4px;
-    background: #e8e6df;
-    border-radius: 0px;
+    height: 3px;
+    background: var(--lib-line);
+    border-radius: 0;
     overflow: hidden;
-    min-width: 40px;
-    max-width: 80px;
+    min-width: 36px;
+    max-width: 72px;
 }
 .score-bar-fill {
     height: 100%;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.8s var(--ease-out);
 }
-.score-bar-fill.score-low  { background: #cb4335; }
-.score-bar-fill.score-mid  { background: #f39c12; }
-.score-bar-fill.score-high { background: #27ae60; }
+.score-bar-fill.score-low  { background: var(--area-duyusal); }
+.score-bar-fill.score-mid  { background: var(--area-gunluk); }
+.score-bar-fill.score-high { background: var(--area-matematik); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BÖLÜM 8: SCROLLBAR & MİKRO-DETAYLAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--lib-line-bold); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--lib-stone); }
+
+/* Spinner renk uyumu */
+.spinner-grow.text-success { color: var(--lib-champagne) !important; }
+
+/* Selection rengi */
+::selection { background: rgba(197, 160, 89, 0.2); color: var(--lib-ink); }
+
+/* Genel link stili */
+a { color: var(--lib-sage); transition: color 0.2s; }
+a:hover { color: var(--lib-champagne); }

@@ -8,157 +8,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .report-hero {
-            background: linear-gradient(135deg, #2c3e50 0%, #4a5d4e 60%, #c5a059 100%);
-            padding: 48px 20px 80px;
-            text-align: center;
-            color: #fff;
-            border-radius: 0 0 50px 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .report-hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.4rem, 6vw, 2.2rem);
-            text-shadow: 1px 3px 10px rgba(0,0,0,0.4);
-            margin-bottom: 4px;
-        }
-        .report-hero p { opacity: 0.75; font-size: 0.88rem; margin: 0; }
-
-        .student-picker {
-            margin: -36px auto 28px;
-            max-width: 480px;
-            padding: 0 20px;
-            position: relative;
-            z-index: 100;
-        }
-        .student-picker select {
-            border-radius: 50px;
-            padding: 14px 22px;
-            font-weight: 600;
-            border: none;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            background: #fff;
-            color: #2c3e50;
-            appearance: none;
-            cursor: pointer;
-            width: 100%;
-        }
+        /* Reports sayfası: tüm stiller style.css'ten geliyor.
+           Sadece sayfa-spesifik layout override'ları burada. */
+        #reportContent { max-width: 660px; margin: 0 auto; padding: 0 16px 120px; }
         .picker-icon {
             position: absolute;
-            right: 38px;
+            right: 36px;
             top: 50%;
             transform: translateY(-50%);
-            color: #4a5d4e;
+            color: var(--lib-champagne);
             pointer-events: none;
         }
-
-        #reportContent { max-width: 680px; margin: 0 auto; padding: 0 16px 120px; }
-
-        /* Özet sayaç kartları */
-        .stat-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 16px 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-            text-align: center;
-            border-top: 4px solid var(--liberum-gold);
-        }
-        .stat-card .stat-num {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--liberum-green);
-            line-height: 1;
-        }
-        .stat-card .stat-label { font-size: 0.68rem; color: #888; margin-top: 4px; }
-
-        /* Genel başarı yüzdesi ring */
-        .global-ring-wrap {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .global-ring {
-            width: 86px; height: 86px;
-            border-radius: 50%;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            font-weight: 800;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-            border: 5px solid;
-            transition: border-color 0.4s;
-        }
-        .global-ring small { font-size: 0.5rem; font-weight: 500; opacity: 0.7; }
-        .ring-low  { border-color: #e74c3c; color: #c0392b; background: #fdecea; }
-        .ring-mid  { border-color: #f39c12; color: #b7770d; background: #fef9e7; }
-        .ring-high { border-color: #27ae60; color: #1e8449; background: #eafaf1; }
-
-        /* Chart kutusu */
-        .chart-card {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-            padding: 20px;
-        }
-        .chart-card h6 {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 14px;
-        }
-
-        /* Gözlem detay listesi (collapse) */
-        .area-card {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-            overflow: hidden;
-        }
-        .area-header {
-            display: flex; align-items: center;
-            justify-content: space-between;
-            padding: 14px 18px;
-            cursor: pointer;
-        }
-        .area-icon {
-            width: 38px; height: 38px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; flex-shrink: 0; margin-right: 10px;
-        }
-        .area-name   { font-weight: 700; font-size: 0.9rem; color: #2c3e50; }
-        .area-count  { font-size: 0.68rem; color: #999; }
-        .area-avg    { font-weight: 800; font-size: 1rem; flex-shrink: 0; }
-        .score-low   { color: #c0392b; }
-        .score-mid   { color: #b7770d; }
-        .score-high  { color: #1e8449; }
-
-        .obs-list { padding: 0 18px 12px; border-top: 1px dashed #f0f0f0; }
-        .obs-row {
-            display: flex; align-items: center;
-            gap: 8px; padding: 7px 0;
-            border-bottom: 1px dashed #f5f5f5;
-        }
-        .obs-row:last-child { border-bottom: none; }
-        .obs-lesson { font-size: 0.73rem; color: #444; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .obs-pill {
-            font-size: 0.57rem; font-weight: 700; padding: 2px 7px;
-            border-radius: 20px; white-space: nowrap; flex-shrink: 0;
-        }
-        .pill-Sunuldu     { background:#e3f2fd; color:#1976d2; }
-        .pill-Calisiyor   { background:#fff3e0; color:#f57c00; }
-        .pill-HataKontrol { background:#fce4ec; color:#c62828; }
-        .pill-Ustalasti   { background:#e8f5e9; color:#388e3c; }
-        .obs-score        { font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
-
-        .empty-state { text-align: center; padding: 60px 20px; opacity: 0.45; }
-        .empty-state i { font-size: 3rem; margin-bottom: 12px; color: var(--liberum-green); }
     </style>
 </head>
 <body>
@@ -194,12 +54,12 @@
 <script>
 // ── SABITLER ──────────────────────────────────────────
 const AREA_META = {
-    'Günlük Yaşam': { icon: '🏡', color: '#8e44ad', rgba: 'rgba(142,68,173,0.75)' },
-    'Duyusal':      { icon: '🎨', color: '#2980b9', rgba: 'rgba(41,128,185,0.75)' },
-    'Dil':          { icon: '📖', color: '#16a085', rgba: 'rgba(22,160,133,0.75)' },
-    'Matematik':    { icon: '🔢', color: '#d35400', rgba: 'rgba(211,84,0,0.75)'   },
-    'Kültür':       { icon: '🌍', color: '#c0392b', rgba: 'rgba(192,57,43,0.75)'  },
-    'Diğer':        { icon: '📌', color: '#7f8c8d', rgba: 'rgba(127,140,141,0.75)'},
+    'Günlük Yaşam': { icon: '🏡', color: '#8B6914', rgba: 'rgba(139,105,20,0.75)' },
+    'Duyusal':      { icon: '🎨', color: '#A0522D', rgba: 'rgba(160,82,45,0.75)' },
+    'Dil':          { icon: '📖', color: '#2E5A88', rgba: 'rgba(46,90,136,0.75)' },
+    'Matematik':    { icon: '🔢', color: '#2D6B4F', rgba: 'rgba(45,107,79,0.75)'  },
+    'Kültür':       { icon: '🌍', color: '#6B4C8A', rgba: 'rgba(107,76,138,0.75)' },
+    'Diğer':        { icon: '📌', color: '#8a8578', rgba: 'rgba(138,133,120,0.75)'},
 };
 
 const PILL_MAP = {
@@ -211,9 +71,9 @@ const PILL_MAP = {
 
 function ratioTier(r) { return r < 0.40 ? 'low' : r < 0.70 ? 'mid' : 'high'; }
 function ratioColor(r, alpha) {
-    if (r >= 0.70) return alpha ? 'rgba(39,174,96,0.75)'  : '#27ae60';
-    if (r >= 0.40) return alpha ? 'rgba(243,156,18,0.75)' : '#f39c12';
-    return                alpha ? 'rgba(231,76,60,0.75)'  : '#e74c3c';
+    if (r >= 0.70) return alpha ? 'rgba(45,107,79,0.75)'  : '#2D6B4F';
+    if (r >= 0.40) return alpha ? 'rgba(139,105,20,0.75)' : '#8B6914';
+    return                alpha ? 'rgba(160,82,45,0.75)'  : '#A0522D';
 }
 
 let chartInstance = null;
@@ -330,8 +190,8 @@ async function loadReport(studentId) {
                     data: scores,
                     backgroundColor: bgColors,
                     borderColor: bdColors,
-                    borderWidth: 2,
-                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderRadius: 2,
                     borderSkipped: false,
                 }]
             },
