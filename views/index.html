@@ -287,9 +287,9 @@ async function analyzePhotos() {
         if (!res.ok) throw new Error(data.error || "Hata oluştu");
 
         resDiv.style.display = 'block';
-        resDiv.innerHTML = \`<strong>Durum Önerisi:</strong> <span class="badge bg-primary">\${data.aiAnalysis.status}</span><br>
-                            <strong>Performans Skoru:</strong> \${data.aiAnalysis.successScore}/10.0<br>
-                            <strong>AI Notu:</strong> <span class="text-muted">\${data.aiAnalysis.notes}</span>\`;
+        resDiv.innerHTML = `<strong>Durum Önerisi:</strong> <span class="badge bg-primary">${data.aiAnalysis.status}</span><br>
+                            <strong>Performans Skoru:</strong> ${data.aiAnalysis.successScore}/10.0<br>
+                            <strong>AI Notu:</strong> <span class="text-muted">${data.aiAnalysis.notes}</span>`;
         
         currentAiSession = {
             sessionId: 'S-' + Date.now(),
