@@ -66,7 +66,27 @@ async function analyzeImagesWithGemini(filePaths) {
     }
 }
 
+async function synthesizeReport(rawData) {
+    if (!model) throw new Error("GEMINI_API_KEY tanımlanmamış.");
+    
+    const request = [
+        prompts.PARENT_REPORT_SYNTHESIS_PROMPT,
+        "AŞAĞIDA ÖĞRENCİNİN VERİLERİ BULUNMAKTADIR:",
+        JSON.stringify(rawData, null, 2)
+    ];
+
+    try {
+        const result = await model.generateContent(request);
+        const response = await result.response;
+        return response.text().trim();
+    } catch (error) {
+        console.error("Gemini synthesis error:", error);
+        throw new Error("Sentez raporu oluşturulamadı.");
+    }
+}
+
 module.exports = {
     uploadToCloudinary,
-    analyzeImagesWithGemini
+    analyzeImagesWithGemini,
+    synthesizeReport
 };

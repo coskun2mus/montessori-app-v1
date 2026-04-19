@@ -33,10 +33,22 @@
 </header>
 
 <div class="student-picker">
-    <select id="studentSelect" onchange="loadReport(this.value)">
-        <option value="" disabled selected>Öğrenci seçiniz…</option>
-    </select>
-    <i class="fas fa-chevron-down picker-icon"></i>
+    <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-6 position-relative">
+            <select id="studentSelect" onchange="loadReport(this.value)" class="form-select">
+                <option value="" disabled selected>Öğrenci seçiniz…</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <input type="date" id="pdfStartDate" class="form-control form-control-sm" title="Başlangıç Tarihi">
+        </div>
+        <div class="col-6 col-md-3">
+            <input type="date" id="pdfEndDate" class="form-control form-control-sm" title="Bitiş Tarihi">
+        </div>
+        <div class="col-12 mt-2" id="pdfBtnContainer" style="display:none;">
+            <button class="btn btn-sm w-100" style="background-color: var(--liberum-green); color: white; font-weight:bold;" onclick="downloadPDF()">📄 Veli Raporu Oluştur (PDF)</button>
+        </div>
+    </div>
 </div>
 
 <div id="reportContent">
@@ -45,6 +57,21 @@
         <p class="small">Raporu görüntülemek için bir öğrenci seçin.</p>
     </div>
     <div id="reportBody" style="display:none;"></div>
+</div>
+
+<!-- Gözlem Detay Modalı -->
+<div class="modal fade" id="obsDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 8px;">
+            <div class="modal-header border-0 px-4 pt-4">
+                <h5 class="fw-bold text-success m-0" id="detailModalTitle" style="color: var(--liberum-green) !important;">Gözlem Detayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="detailModalBody">
+                Yükleniyor...
+            </div>
+        </div>
+    </div>
 </div>
 
 <nav class="bottom-nav">
@@ -102,6 +129,15 @@ async function loadReport(studentId) {
     if (!studentId) return;
     document.getElementById('emptyState').style.display = 'none';
     const body = document.getElementById('reportBody');
+    body.style.display = 'block';
+    document.getElementById('pdfBtnContainer').style.display = 'block'; // PDF Butonunu göster
+    
+    // Tarih alanlarına varsayılan değer atama (son 3 ay)
+    const today = new Date();
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(today.getMonth() - 3);
+    document.getElementById('pdfEndDate').value = today.toISOString().split('T')[0];
+    document.getElementById('pdfStartDate').value = threeMonthsAgo.toISOString().split('T')[0];
     body.style.display = 'block';
     body.innerHTML = `<div class="text-center py-5"><div class="spinner-grow text-success"></div></div>`;
     if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
@@ -251,7 +287,7 @@ async function loadReport(studentId) {
                 </div>
                 <div class="obs-list" id="${cardId}" style="display:none;">
                     ${area.observations.map(o => `
-                        <div class="obs-row">
+                        <div class="obs-row" style="cursor:pointer" onclick="openObservationDetail('${o._id}')">
                             <span class="obs-lesson" title="${o.lessonName}">${o.lessonName}</span>
                             <span class="obs-pill ${PILL_MAP[o.status] || 'bg-secondary text-white'}">${o.status}</span>
                             <span class="obs-score score-${ratioTier(o.score / o.maxScore)}">${o.score.toFixed(1)}<span style="font-weight:700; color:var(--lib-ink);">/${o.maxScore.toFixed(1)}</span></span>
@@ -259,6 +295,15 @@ async function loadReport(studentId) {
                 </div>`;
             container.appendChild(card);
         });
+
+        // ── ORTAM GÖZLEMLERİ (STAFF NOTES) ──────────────────────────────────
+        body.innerHTML += `
+            <div class="fw-bold text-muted mt-4 mb-2" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px;">
+                <i class="fas fa-users me-1"></i>Okul Personel Gözlemleri
+            </div>
+            <div id="staffNotesContainer" class="d-flex flex-column gap-2"></div>
+        `;
+        loadStaffNotes(studentId);
 
     } catch (e) {
         body.innerHTML = `<p class="text-center text-danger mt-4"><i class="fas fa-exclamation-triangle me-1"></i>Rapor alınırken hata oluştu.</p>`;
@@ -273,6 +318,120 @@ function toggleObs(cardId, header) {
     el.style.display = open ? 'block' : 'none';
     icon.className   = open ? 'fas fa-chevron-up text-muted' : 'fas fa-chevron-down text-muted';
     icon.style.fontSize = '0.75rem';
+}
+
+async function loadStaffNotes(studentId) {
+    const container = document.getElementById('staffNotesContainer');
+    container.innerHTML = '<div class="text-center small text-muted">Yükleniyor...</div>';
+    try {
+        const res = await fetch(`/api/staff-notes/student/${studentId}`);
+        const notes = await res.json();
+        
+        if (notes.length === 0) {
+            container.innerHTML = '<div class="small px-3 py-2 bg-light border rounded text-muted">Henüz personel gözlemi bulunmuyor.</div>';
+            return;
+        }
+
+        container.innerHTML = notes.map(n => `
+            <div class="p-3 bg-white border border-secondary border-opacity-25 rounded-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="fw-bold text-dark" style="font-size:0.85rem;">${n.authorName} <span class="badge bg-secondary ms-1">${n.authorRole}</span></div>
+                    <div class="text-muted" style="font-size:0.70rem;">${new Date(n.date).toLocaleDateString('tr-TR')}</div>
+                </div>
+                <div class="text-muted" style="font-size:0.8rem; font-style: italic;">"${n.note}"</div>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = '<div class="small text-danger">Gözlemler yüklenemedi.</div>';
+    }
+}
+
+async function openObservationDetail(id) {
+    const detailBody = document.getElementById('detailModalBody');
+    const title = document.getElementById('detailModalTitle');
+    detailBody.innerHTML = '<div class="text-center py-4"><div class="spinner-grow text-success"></div></div>';
+    new bootstrap.Modal(document.getElementById('obsDetailModal')).show();
+
+    try {
+        const res = await fetch(`/api/observations/${id}/detail`);
+        const obs = await res.json();
+        
+        title.innerText = `Gözlem Detayı — ${obs.lesson?.lessonName || 'Materyal'}`;
+        
+        let html = `
+            <div class="mb-3">
+                <div class="fw-bold text-dark small mb-1"><i class="fas fa-clipboard-check me-1"></i>Öğretmen Değerlendirmesi</div>
+                <div class="p-3 bg-light border-start border-success border-4 rounded-3 text-muted" style="font-size:0.85rem;">
+                    Durum: <span class="badge ${PILL_MAP[obs.status] || 'bg-secondary'}">${obs.status}</span> <br>
+                    Tarih: ${new Date(obs.observationDate).toLocaleDateString('tr-TR')} <br>
+                    Not: <i>"${obs.note || 'Not düşülmemiş.'}"</i>
+                </div>
+            </div>`;
+
+        if (obs.photos && obs.photos.length > 0) {
+            obs.photos.forEach(session => {
+                html += `
+                <div class="mt-4">
+                    <div class="fw-bold text-dark small mb-2"><i class="fas fa-robot text-primary me-1"></i>AI Görsel Analizi 
+                        <span class="text-muted fw-normal float-end">${new Date(session.sessionDate).toLocaleDateString()}</span>
+                    </div>
+                    <div class="d-flex overflow-auto gap-2 mb-2 pb-1" style="max-width: 100%;">
+                        ${session.images.map(img => `<a href="${img.url}" target="_blank"><img src="${img.url}" style="height: 100px; border-radius: 6px; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></a>`).join('')}
+                    </div>
+                    <div class="p-3 bg-primary bg-opacity-10 rounded-3 text-dark" style="font-size:0.85rem;">
+                        <strong>Skor:</strong> ${session.images[0]?.aiAnalysis?.successScore}/10.0 | <strong>Durum Önerisi:</strong> ${session.images[0]?.aiAnalysis?.status} <br>
+                        <div class="mt-2 text-muted">"${session.sessionSummary}"</div>
+                    </div>
+                </div>`;
+            });
+        }
+        detailBody.innerHTML = html;
+        
+    } catch (e) {
+        detailBody.innerHTML = '<div class="text-danger py-3 text-center">Detay yüklenemedi.</div>';
+    }
+}
+
+async function downloadPDF() {
+    const studentId = document.getElementById('studentSelect').value;
+    const start = document.getElementById('pdfStartDate').value;
+    const end = document.getElementById('pdfEndDate').value;
+    
+    if (!studentId || !start || !end) return alert("Lütfen öğrenci ve tarih aralığı seçin.");
+    
+    // Yükleniyor durumunu göstermek için butonu değiştir
+    const btn = event.currentTarget || document.querySelector('#pdfBtnContainer button');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Hazırlanıyor... Lütfen bekleyin.';
+    btn.disabled = true;
+
+    // PDF oluşturma uzun sürebilir (Özellikle Gemini AI sentezi ve resim indirmeler), bu yüzden doğrudan indirmeyi başlatıyoruz
+    const downloadUrl = `/api/reports/student/${studentId}/pdf?start=${start}&end=${end}`;
+    
+    // Doğrudan window.open ile indirme başlatıldığında spinner takılı kalır,
+    // Bunu önlemek için setTimeout ile geri yüklüyoruz. (Aslında fetch ile blob almak daha iyi UX sunar ama PDF için window.open pratiktir)
+    fetch(downloadUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("Rapor alınamadı.");
+            return res.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Liberum_Veli_Raporu_${studentId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(err => {
+            alert("Rapor oluşturulurken bir hata oluştu veya bu dönem için yeterli veri yok.");
+        })
+        .finally(() => {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        });
 }
 </script>
 </body>

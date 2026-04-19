@@ -10,6 +10,7 @@ const app = express();
 app.use(express.json());
 
 const aiService = require('./services/aiService');
+const reportService = require('./services/reportService');
 
 // Multer klasörü kontrolü
 const uploadDir = path.join(__dirname, '..', 'uploads');
@@ -27,6 +28,7 @@ const Class = require('./models/Class');
 const Student = require('./models/Student');
 const Lesson = require('./models/Lesson');
 const Observation = require('./models/Observation');
+const StaffNote = require('./models/StaffNote');
 
 // MONGODB BAĞLANTISI
 if (process.env.MONGO_URI) {
@@ -249,6 +251,49 @@ app.post('/api/observations', async (req, res) => {
     }
 });
 
+// --- 4. ORTAM GÖZLEMLERİ (STAFF NOTES) ---
+app.post('/api/staff-notes', async (req, res) => {
+    try {
+        const { student, authorName, authorRole, note } = req.body;
+        if (!student || !authorName || !authorRole || !note) {
+            return res.status(400).json({ error: "Tüm alanların doldurulması zorunludur." });
+        }
+        
+        const newNote = await StaffNote.create({
+            student,
+            authorName,
+            authorRole,
+            note,
+            date: new Date()
+        });
+        
+        res.status(201).json(newNote);
+    } catch (err) {
+        console.error("Staff Note Kayıt Hatası:", err);
+        res.status(500).json({ error: "Ortam gözlemi kaydedilemedi." });
+    }
+});
+
+app.get('/api/staff-notes/student/:studentId', async (req, res) => {
+    try {
+        const notes = await StaffNote.find({ student: req.params.studentId })
+            .populate('student', 'firstName lastName')
+            .sort({ date: -1 });
+        res.json(notes);
+    } catch (err) {
+        res.status(500).json({ error: "Gözlemler alınamadı." });
+    }
+});
+
+app.delete('/api/staff-notes/:id', async (req, res) => {
+    try {
+        await StaffNote.findByIdAndDelete(req.params.id);
+        res.json({ message: "Not silindi." });
+    } catch (err) {
+        res.status(500).json({ error: "Not silinemedi." });
+    }
+});
+
 // AI Fotoğraf Analizi Rotası
 app.post('/api/observations/ai-analyze', upload.array('photos', 3), async (req, res) => {
     try {
@@ -345,11 +390,14 @@ app.get('/api/observations/student/:studentId/area-summary', async (req, res) =>
             areaMap[area].count++;
             
             areaMap[area].observations.push({
+                _id:        obs._id,
                 lessonName: obs.lesson.lessonName,
                 status:     obs.status,
                 score:      dynamicScore,
                 maxScore,
-                date:       obs.observationDate
+                date:       obs.observationDate,
+                note:       obs.note,
+                photos:     obs.photos
             });
         }
 
@@ -379,6 +427,39 @@ app.get('/api/observations/student/:studentId/area-summary', async (req, res) =>
         });
     } catch (err) {
         res.status(500).json({ error: "Alan özeti alınamadı." });
+    }
+});
+
+app.get('/api/observations/:id/detail', async (req, res) => {
+    try {
+        const obs = await Observation.findById(req.params.id)
+            .populate('lesson', 'lessonName')
+            .populate('student', 'firstName lastName');
+        if (!obs) return res.status(404).json({ error: "Gözlem bulunamadı." });
+        res.json(obs);
+    } catch (err) {
+        res.status(500).json({ error: "Gözlem detayı alınamadı." });
+    }
+});
+
+// Veli Raporu Ouluşturma (PDF)
+app.get('/api/reports/student/:studentId/pdf', async (req, res) => {
+    const { start, end } = req.query;
+    if (!start || !end) {
+        return res.status(400).json({ error: "Başlangıç ve bitiş tarihi gereklidir." });
+    }
+    
+    try {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Liberum_Gelisim_Raporu_${req.params.studentId}.pdf"`);
+        
+        await reportService.generateParentReport(res, req.params.studentId, start, end);
+        
+    } catch (err) {
+        console.error("PDF Generate Error:", err);
+        if (!res.headersSent) {
+            res.status(500).json({ error: "PDF raporu oluşturulamadı." });
+        }
     }
 });
 

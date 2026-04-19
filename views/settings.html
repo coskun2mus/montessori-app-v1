@@ -108,9 +108,40 @@
         </div>
 
         <div class="col-12">
-            <div class="card admin-card p-4 border-start border-info border-5 shadow-sm">
+            <div class="card admin-card p-4 border-start border-info border-5 shadow-sm mb-3">
                 <h5 class="mb-3 text-info fw-bold"><i class="fas fa-list me-2"></i>Sınıf Yönetimi</h5>
                 <div id="manageClassList" class="row row-cols-1 row-cols-md-2 g-2"></div>
+            </div>
+            
+            <div class="card admin-card p-4 border-start border-secondary border-5 shadow-sm">
+                <h5 class="mb-3 text-secondary fw-bold"><i class="fas fa-comment-dots me-2"></i>Ortam Gözlemi (Personel Notu)</h5>
+                <p class="small text-muted mb-3">Servis şoförü, okul müdürü veya mutfak personelinin materyalden bağımsız serbest gözlemleri.</p>
+                
+                <div class="row g-2">
+                    <div class="col-12 col-md-4">
+                        <select id="staffNoteStudent" class="form-select form-select-sm">
+                            <option selected disabled>Öğrenci Seçiniz...</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <input type="text" id="staffNoteAuthor" class="form-control form-control-sm" placeholder="Adınız Soyadınız (Örn: Ahmet Bey)">
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <select id="staffNoteRole" class="form-select form-select-sm">
+                            <option selected disabled>Göreviniz...</option>
+                            <option>Servis</option>
+                            <option>Mutfak</option>
+                            <option>Yönetim</option>
+                            <option>Diğer</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <textarea id="staffNoteContent" class="form-control form-control-sm" rows="3" placeholder="Öğrenci ile ilgili gözleminizi buraya yazınız..."></textarea>
+                    </div>
+                    <div class="col-12 text-end mt-2">
+                        <button class="btn btn-sm btn-secondary fw-bold px-4" onclick="saveStaffNote()">Gözlemi Kaydet <i class="fas fa-paper-plane ms-1"></i></button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -179,12 +210,18 @@
 
     function renderStudentList(students) {
         const listContainer = document.getElementById('manageStudentList');
+        const noteSelect = document.getElementById('staffNoteStudent'); // Ortam gözlemi listesi
         listContainer.innerHTML = '';
+        noteSelect.innerHTML = '<option selected disabled>Öğrenci Seçiniz...</option>';
+        
         if(!students || students.length === 0) {
             listContainer.innerHTML = '<p class="text-center py-3 text-muted small">Kayıtlı öğrenci bulunamadı.</p>';
             return;
         }
         students.forEach(s => {
+            // Dropdown option for staff note
+            noteSelect.innerHTML += \`<option value="\${s._id}">\${s.firstName} \${s.lastName}</option>\`;
+            
             let options = allClasses.map(c => 
                 `<option value="${c._id}" ${c._id === s.currentClass ? 'selected' : ''}>${c.className}</option>`
             ).join('');
@@ -400,6 +437,36 @@ async function saveClass() {
         if(confirm(`"${name}" sınıfını silmek istediğinize emin misiniz?`)) {
             await fetch(`/api/classes/${id}`, { method: 'DELETE' });
             loadInitialData();
+        }
+    }
+
+    // --- ORTAM GÖZLEMİ (STAFF NOTE) İŞLEMLERİ ---
+    async function saveStaffNote() {
+        const student = document.getElementById('staffNoteStudent').value;
+        const authorName = document.getElementById('staffNoteAuthor').value.trim();
+        const authorRole = document.getElementById('staffNoteRole').value;
+        const note = document.getElementById('staffNoteContent').value.trim();
+
+        if (student.includes("Seçiniz") || !authorName || authorRole.includes("Görev") || !note) {
+            return alert("Lütfen tüm alanları doldurun (Öğrenci, İsim, Görev ve Not)!");
+        }
+
+        try {
+            const res = await fetch('/api/staff-notes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ student, authorName, authorRole, note })
+            });
+
+            if (res.ok) {
+                alert("✅ Ortam gözlemi başarıyla kaydedildi!");
+                document.getElementById('staffNoteContent').value = ''; // sadece notu temizle, diğer seçimler kalabilir
+            } else {
+                const err = await res.json();
+                alert("⚠️ Hata: " + (err.error || "Bilinmeyen bir hata oluştu"));
+            }
+        } catch (error) {
+            alert("Bağlantı hatası!");
         }
     }
 </script>
