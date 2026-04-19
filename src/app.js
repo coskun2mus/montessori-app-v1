@@ -2,10 +2,21 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
+
+const aiService = require('./services/aiService');
+
+// Multer klasörü kontrolü
+const uploadDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+const upload = multer({ dest: uploadDir });
 
 // Klasör yolları - Görsel dosyalar (logo vb.) için 'public' kullanımı önerilir
 const viewsPath = path.join(__dirname, '..', 'views');
@@ -82,7 +93,7 @@ app.delete('/api/classes/:id', async (req, res) => {
 // 2. MATERYALLER (LESSONS)
 app.get('/api/lessons', async (req, res) => {
     try {
-        const lessons = await Lesson.find().sort({ area: 1, lessonName: 1 });
+        const lessons = await Lesson.find({ isActive: { $ne: false } }).sort({ area: 1, lessonName: 1 });
         res.json(lessons);
     } catch (err) {
         res.status(500).json({ error: "Materyaller getirilemedi" });
@@ -113,8 +124,9 @@ app.put('/api/lessons/:id', async (req, res) => {
 
 app.delete('/api/lessons/:id', async (req, res) => {
     try {
-        await Lesson.findByIdAndDelete(req.params.id);
-        res.json({ message: "Silindi" });
+        const lesson = await Lesson.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true });
+        if (!lesson) return res.status(404).json({ error: "Materyal bulunamadı." });
+        res.json({ message: "Materyal pasife alındı (Soft Delete)." });
     } catch (err) {
         res.status(500).json({ error: "Silme hatası." });
     }
@@ -234,6 +246,49 @@ app.post('/api/observations', async (req, res) => {
     } catch (err) {
         console.error("Gözlem Kayıt Hatası:", err);
         res.status(400).json({ error: "Gözlem kaydedilemedi. Lütfen tüm alanları kontrol edin." });
+    }
+});
+
+// AI Fotoğraf Analizi Rotası
+app.post('/api/observations/ai-analyze', upload.array('photos', 3), async (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: "Lütfen en az bir fotoğraf yükleyin." });
+        }
+
+        const filePaths = req.files.map(f => f.path);
+        
+        // 1. Gemini Analizi
+        let aiAnalysis = null;
+        try {
+            aiAnalysis = await aiService.analyzeImagesWithGemini(filePaths);
+        } catch(e) {
+            console.error("Gemini Error:", e.message);
+            aiAnalysis = { status: "Yönlendirme", successScore: 5.0, notes: "Yapay zeka analizi API Key hataları sebebiyle yapılamadı." };
+        }
+
+        // 2. Cloudinary Upload
+        const imageUrls = [];
+        for (const fp of filePaths) {
+            try {
+                const url = await aiService.uploadToCloudinary(fp);
+                imageUrls.push(url);
+            } catch (e) {
+                console.error("Cloudinary Error:", e.message);
+                imageUrls.push(""); // Fallback empty
+            }
+        }
+
+        // 3. Geçici dosyaları sil
+        filePaths.forEach(fp => fs.unlinkSync(fp));
+
+        res.json({
+            aiAnalysis,
+            imageUrls
+        });
+    } catch (err) {
+        console.error("AI Analyze Error:", err);
+        res.status(500).json({ error: "Analiz sırasında sunucu hatası oluştu." });
     }
 });
 

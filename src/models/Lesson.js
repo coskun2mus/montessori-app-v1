@@ -27,6 +27,10 @@ const lessonSchema = new mongoose.Schema({
     alfa: {
         type: Number,
         default: 1.0 // Pedagojik vites (Örn: Hızlı ilerlenen materyaller için 1.45, yavaş olanlar için 0.65)
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 }, { timestamps: true });
 

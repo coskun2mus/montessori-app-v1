@@ -70,6 +70,16 @@
                     <option selected disabled>Önce Alan Seçiniz...</option>
                 </select>
                 
+                <!-- AI Görsel Analizi -->
+                <div class="mb-3 p-3 rounded-2 bg-light border border-info">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-primary"><i class="fas fa-robot"></i> AI Asistan (Opsiyonel)</span>
+                    </div>
+                    <input type="file" id="aiPhotos" class="form-control form-control-sm mb-2" accept="image/*" multiple max="3">
+                    <button class="btn btn-sm btn-outline-primary w-100" id="btnAnalyze" onclick="analyzePhotos()">Fotoğrafları Analiz Et <i class="fas fa-magic"></i></button>
+                    <div id="aiResult" class="mt-2 small text-dark p-2 bg-white rounded border" style="display:none;"></div>
+                </div>
+
                 <div class="d-grid gap-2">
                     <button class="btn btn-status btn-sunuldu" onclick="saveQuickObservation('Sunuldu')">1. Sunuldu <i class="fas fa-eye float-end"></i></button>
                     <button class="btn btn-status btn-calisiyor" onclick="saveQuickObservation('Yönlendirme')">2. Yönlendirme <i class="fas fa-sync float-end"></i></button>
@@ -88,6 +98,7 @@
 let allLessons = []; 
 let activeStudentId = null;
 let activeClassId = null; // Kayıt sonrası sınıfı korumak için ekledik
+let currentAiSession = null; // AI Session Cache
 
 document.addEventListener('DOMContentLoaded', loadClasses);
 
@@ -179,6 +190,12 @@ async function openObservation(id, name) {
         document.getElementById('areaSelect').selectedIndex = 0;
         document.getElementById('lessonList').innerHTML = '<option selected disabled>Önce Alan Seçiniz...</option>';
         document.getElementById('obsNote').value = '';
+        
+        // Reset AI variables and UI
+        currentAiSession = null;
+        document.getElementById('aiPhotos').value = '';
+        document.getElementById('aiResult').style.display = 'none';
+
         new bootstrap.Modal(document.getElementById('observationModal')).show();
     } catch (err) { console.error(err); }
 }
@@ -205,10 +222,14 @@ async function saveQuickObservation(status) {
         student: activeStudentId, 
         lesson: lessonId, 
         status: status, 
-        notes: note,
+        note: note,
         teacherName: "Arzu Hoca", 
         observationDate: new Date() 
     };
+
+    if (currentAiSession) {
+        data.photos = [currentAiSession];
+    }
 
     try {
         const res = await fetch('/api/observations', { 
@@ -236,6 +257,57 @@ async function saveQuickObservation(status) {
         }
     } catch (err) { 
         alert("❌ Sunucu hatası!");
+    }
+}
+
+async function analyzePhotos() {
+    const fileInput = document.getElementById('aiPhotos');
+    if (!fileInput.files || fileInput.files.length === 0) return alert("Lütfen en az 1 fotoğraf seçin.");
+    if (fileInput.files.length > 3) return alert("Maksimum 3 fotoğraf yükleyebilirsiniz.");
+
+    const btn = document.getElementById('btnAnalyze');
+    const resDiv = document.getElementById('aiResult');
+    
+    btn.innerHTML = 'Analiz Ediliyor... <i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    resDiv.style.display = 'none';
+
+    const formData = new FormData();
+    for (let i = 0; i < fileInput.files.length; i++) {
+        formData.append('photos', fileInput.files[i]);
+    }
+
+    try {
+        const res = await fetch('/api/observations/ai-analyze', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || "Hata oluştu");
+
+        resDiv.style.display = 'block';
+        resDiv.innerHTML = \`<strong>Durum Önerisi:</strong> <span class="badge bg-primary">\${data.aiAnalysis.status}</span><br>
+                            <strong>Performans Skoru:</strong> \${data.aiAnalysis.successScore}/10.0<br>
+                            <strong>AI Notu:</strong> <span class="text-muted">\${data.aiAnalysis.notes}</span>\`;
+        
+        currentAiSession = {
+            sessionId: 'S-' + Date.now(),
+            images: data.imageUrls.map(url => ({
+                url: url,
+                aiAnalysis: data.aiAnalysis
+            })),
+            sessionSummary: data.aiAnalysis.notes
+        };
+
+        // Otomatik not doldurma
+        document.getElementById('obsNote').value = data.aiAnalysis.notes;
+
+    } catch (e) {
+        alert("Analiz hatası: " + e.message);
+    } finally {
+        btn.innerHTML = 'Fotoğrafları Analiz Et <i class="fas fa-magic"></i>';
+        btn.disabled = false;
     }
 }
 </script>

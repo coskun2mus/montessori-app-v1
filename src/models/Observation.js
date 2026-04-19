@@ -39,7 +39,16 @@ const observationSchema = new mongoose.Schema({
     note: {
         type: String,
         trim: true
-    }
+    },
+    photos: [{
+        sessionId: String,
+        sessionDate: { type: Date, default: Date.now },
+        images: [{
+            url: String,
+            aiAnalysis: Object
+        }],
+        sessionSummary: String
+    }]
 }, {
     timestamps: true,
     toJSON:   { virtuals: true },
