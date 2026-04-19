@@ -297,12 +297,12 @@ async function loadReport(studentId) {
         });
 
         // ── ORTAM GÖZLEMLERİ (STAFF NOTES) ──────────────────────────────────
-        body.innerHTML += `
+        body.insertAdjacentHTML('beforeend', `
             <div class="fw-bold text-muted mt-4 mb-2" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px;">
                 <i class="fas fa-users me-1"></i>Okul Personel Gözlemleri
             </div>
             <div id="staffNotesContainer" class="d-flex flex-column gap-2"></div>
-        `;
+        `);
         loadStaffNotes(studentId);
 
     } catch (e) {

@@ -4,6 +4,18 @@ const Observation = require('../models/Observation');
 const StaffNote = require('../models/StaffNote');
 const Student = require('../models/Student');
 
+// PDFKit standart fontlarında WinAnsiEncoding hatasını önlemek için karakter dönüştürücü
+function trToEn(text) {
+    if (!text) return "";
+    return text.toString()
+        .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+        .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+        .replace(/ş/g, 's').replace(/Ş/g, 'S')
+        .replace(/ı/g, 'i').replace(/İ/g, 'I')
+        .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+        .replace(/ç/g, 'c').replace(/Ç/g, 'C');
+}
+
 async function downloadImage(url) {
     try {
         const res = await fetch(url);
@@ -109,23 +121,23 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     // Daha temiz kod için Roboto fontu indirilebilir, ancak şimdilik standart kullanım:
     
     // Header
-    doc.fontSize(24).fillColor('#2D6B4F').text('Liberum Montessori', { align: 'center' });
-    doc.fontSize(14).fillColor('#8a8578').text('Dönem Gelişim ve Gözlem Raporu', { align: 'center' });
+    doc.fontSize(24).fillColor('#2D6B4F').text(trToEn('Liberum Montessori'), { align: 'center' });
+    doc.fontSize(14).fillColor('#8a8578').text(trToEn('Donem Gelisim ve Gozlem Raporu'), { align: 'center' });
     doc.moveDown(1.5);
 
     // Öğrenci Bilgileri
-    doc.fontSize(16).fillColor('#000000').text(`Öğrenci: ${student.firstName} ${student.lastName}`);
-    doc.fontSize(12).fillColor('#555555').text(`Sınıf: ${student.currentClass?.className || 'Belirtilmemiş'}`);
-    doc.text(`Tarih Aralığı: ${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')}`);
+    doc.fontSize(16).fillColor('#000000').text(trToEn(`Ogrenci: ${student.firstName} ${student.lastName}`));
+    doc.fontSize(12).fillColor('#555555').text(trToEn(`Sinif: ${student.currentClass?.className || 'Belirtilmemis'}`));
+    doc.text(trToEn(`Tarih Araligi: ${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')}`));
     doc.moveDown(2);
 
     // AI Sentez Değerlendirmesi
-    doc.fontSize(16).fillColor('#2E5A88').text('Genel Pedagojik ve Sosyal Değerlendirme');
+    doc.fontSize(16).fillColor('#2E5A88').text(trToEn('Genel Pedagojik ve Sosyal Degerlendirme'));
     doc.moveDown(0.5);
     
     // tr karakterlerin Helvetica'da çıkması bazen sorun olabilir ama Node 18+ PDFKit çözmüş olabilir.
     // Eğer sorun olursa Roboto .ttf file serve etmek gerekir projeye.
-    doc.fontSize(11).fillColor('#333333').text(synthesisText, {
+    doc.fontSize(11).fillColor('#333333').text(trToEn(synthesisText), {
         align: 'justify',
         lineGap: 4
     });
@@ -133,7 +145,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
 
     // Çalışılan Materyaller (Basit Liste)
     doc.addPage();
-    doc.fontSize(16).fillColor('#A0522D').text('Dönem İçerisinde Üzerinde Çalışılan Materyaller');
+    doc.fontSize(16).fillColor('#A0522D').text(trToEn('Donem Icerisinde Uzerinde Calisilan Materyaller'));
     doc.moveDown(1);
     
     const obsByArea = {};
@@ -145,10 +157,10 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     });
 
     Object.entries(obsByArea).forEach(([area, obsList]) => {
-        doc.fontSize(14).fillColor('#6B4C8A').text(`[ ${area} ]`);
+        doc.fontSize(14).fillColor('#6B4C8A').text(trToEn(`[ ${area} ]`));
         doc.moveDown(0.5);
         obsList.forEach(o => {
-            doc.fontSize(11).fillColor('#000').text(`• ${o.lesson.lessonName} - Durum: ${o.status}`);
+            doc.fontSize(11).fillColor('#000').text(trToEn(`• ${o.lesson.lessonName} - Durum: ${o.status}`));
         });
         doc.moveDown(1);
     });
@@ -156,11 +168,11 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     // Personel Gözlemleri
     if (staffNotes.length > 0) {
         doc.moveDown(1);
-        doc.fontSize(16).fillColor('#8B6914').text('Okul Personel Gözlemleri');
+        doc.fontSize(16).fillColor('#8B6914').text(trToEn('Okul Personel Gozlemleri'));
         doc.moveDown(0.5);
         staffNotes.forEach(n => {
-            doc.fontSize(11).fillColor('#555').text(`"${n.note}"`);
-            doc.fontSize(9).fillColor('#999').text(`— ${n.authorName} (${n.authorRole}) / ${new Date(n.date).toLocaleDateString('tr-TR')}`);
+            doc.fontSize(11).fillColor('#555').text(trToEn(`"${n.note}"`));
+            doc.fontSize(9).fillColor('#999').text(trToEn(`— ${n.authorName} (${n.authorRole}) / ${new Date(n.date).toLocaleDateString('tr-TR')}`));
             doc.moveDown(0.5);
         });
     }
@@ -168,7 +180,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     // Fotoğraf Galerisi
     if (selectedPhotos.length > 0) {
         doc.addPage();
-        doc.fontSize(16).fillColor('#2D6B4F').text('Çalışma Anlarından Kareler');
+        doc.fontSize(16).fillColor('#2D6B4F').text(trToEn('Calisma Anlarindan Kareler'));
         doc.moveDown(1);
 
         let yPos = doc.y;
@@ -185,7 +197,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
                 
                 try {
                     doc.image(buffer, 50, yPos, { width: 300 });
-                    doc.fontSize(10).fillColor('#555').text(`${photo.lessonName} (${photo.aiStatus})`, 370, yPos + 20, { width: 150 });
+                    doc.fontSize(10).fillColor('#555').text(trToEn(`${photo.lessonName} (${photo.aiStatus})`), 370, yPos + 20, { width: 150 });
                     yPos += 300; // Sonraki resim için y değerini artır (resim yüksekliğine göre ayarlanabilir)
                 } catch (imgError) {
                     console.error("PDF image add error:", imgError.message);

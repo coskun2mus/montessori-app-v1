@@ -220,7 +220,7 @@
         }
         students.forEach(s => {
             // Dropdown option for staff note
-            noteSelect.innerHTML += \`<option value="\${s._id}">\${s.firstName} \${s.lastName}</option>\`;
+            noteSelect.innerHTML += `<option value="${s._id}">${s.firstName} ${s.lastName}</option>`;
             
             let options = allClasses.map(c => 
                 `<option value="${c._id}" ${c._id === s.currentClass ? 'selected' : ''}>${c.className}</option>`
