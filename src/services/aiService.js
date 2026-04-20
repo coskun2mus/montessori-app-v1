@@ -19,27 +19,6 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
 const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 const model = genAI ? genAI.getGenerativeModel({ model: "gemini-3-flash-preview" }) : null;
 
-// Gecikme fonksiyonu (Rate limit: 429 hataları için bekleme)
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-// Retry mekanizmalı jeneratör
-async function generateWithRetry(request, retries = 3, delayMs = 2000) {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            const result = await model.generateContent(request);
-            return result;
-        } catch (error) {
-            if (error.status === 429 && attempt < retries) {
-                console.warn(`[Gemini API] 429 Too Many Requests. ${attempt}. deneme başarısız. ${delayMs}ms bekleniyor...`);
-                await delay(delayMs);
-                delayMs *= 2; // Exponential backoff (2s, 4s, 8s)
-            } else {
-                throw error;
-            }
-        }
-    }
-}
-
 // Fotoğrafı base64 formatına çeviren yardımcı (Gemini için)
 function fileToGenerativePart(path, mimeType) {
     return {
@@ -74,7 +53,7 @@ async function analyzeImagesWithGemini(filePaths) {
     ];
 
     try {
-        const result = await generateWithRetry(request);
+        const result = await model.generateContent(request);
         const response = await result.response;
         const text = response.text();
         
@@ -97,7 +76,7 @@ async function synthesizeReport(rawData) {
     ];
 
     try {
-        const result = await generateWithRetry(request, 4, 3000); // Rapor sentezinde daha uzun bekle
+        const result = await model.generateContent(request);
         const response = await result.response;
         return response.text().trim();
     } catch (error) {
