@@ -70,7 +70,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
         student: studentId,
         date: { $gte: start, $lte: end }
     });
-
+//////  No change/////
     const STATUS_RANK = { 'Sunuldu': 1, 'Yönlendirme': 2, 'Hata Kontrolü': 3, 'Ustalaştı': 4 };
 
     // Yalnızca geçerli skoru olan gözlemleri filtrele (uygulama ile aynı)
