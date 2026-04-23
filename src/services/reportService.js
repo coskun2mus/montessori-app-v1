@@ -146,9 +146,24 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
         console.error("PDFKit Document Error:", err);
     });
 
-    // Font Tanımları (Stabilite için standart fontlar)
-    const FONT_REGULAR = 'Helvetica';
-    const FONT_BOLD = 'Helvetica-Bold';
+    // Font Tanımları (Turkish Character Support)
+    let FONT_REGULAR = 'Helvetica';
+    let FONT_BOLD = 'Helvetica-Bold';
+
+    try {
+        if (fs.existsSync(FONT_REGULAR_PATH)) {
+            const regularBuffer = fs.readFileSync(FONT_REGULAR_PATH);
+            doc.registerFont('Roboto-Regular', regularBuffer);
+            FONT_REGULAR = 'Roboto-Regular';
+        }
+        if (fs.existsSync(FONT_BOLD_PATH)) {
+            const boldBuffer = fs.readFileSync(FONT_BOLD_PATH);
+            doc.registerFont('Roboto-Bold', boldBuffer);
+            FONT_BOLD = 'Roboto-Bold';
+        }
+    } catch (fontErr) {
+        console.error("Font loading error (Buffer method):", fontErr);
+    }
     
     // Header
     doc.font(FONT_BOLD).fontSize(26).fillColor('#2D6B4F').text('Liberum Montessori', { align: 'center' });
