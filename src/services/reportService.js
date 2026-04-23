@@ -136,34 +136,19 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     
     if (resStream.writableEnded) return;
     
-    // Akış (Response) hatasını yakala - Çökmeyi önlemek için kritik!
     resStream.on('error', (err) => {
         console.error("Response Stream Error:", err);
     });
 
     doc.pipe(resStream);
 
-    // PDFKit Hata Yakalayıcı
     doc.on('error', (err) => {
         console.error("PDFKit Document Error:", err);
     });
 
-    // Font Kaydı ve Fallback Mekanizması
-    let FONT_REGULAR = 'Helvetica';
-    let FONT_BOLD = 'Helvetica-Bold';
-
-    try {
-        if (fs.existsSync(FONT_REGULAR_PATH) && fs.existsSync(FONT_BOLD_PATH)) {
-            doc.registerFont('Roboto-Regular', FONT_REGULAR_PATH);
-            doc.registerFont('Roboto-Bold', FONT_BOLD_PATH);
-            FONT_REGULAR = 'Roboto-Regular';
-            FONT_BOLD = 'Roboto-Bold';
-        } else {
-            console.warn("⚠️ Roboto fontları bulunamadı, Helvetica ile devam ediliyor.");
-        }
-    } catch (fontErr) {
-        console.error("Font registration failed:", fontErr);
-    }
+    // Font Tanımları (Stabilite için standart fontlar)
+    const FONT_REGULAR = 'Helvetica';
+    const FONT_BOLD = 'Helvetica-Bold';
     
     // Header
     doc.font(FONT_BOLD).fontSize(26).fillColor('#2D6B4F').text('Liberum Montessori', { align: 'center' });

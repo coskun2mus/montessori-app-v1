@@ -1,10 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cloudinary = require('cloudinary').v2;
-const fs = require('fs');
 const prompts = require('../../config/prompts');
-
-// .env dosyasından anahtarlar beklenir:
-// GEMINI_API_KEY, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+const fs = require('fs');
 
 if (process.env.CLOUDINARY_CLOUD_NAME) {
     cloudinary.config({
@@ -12,73 +9,36 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
         api_key: process.env.CLOUDINARY_API_KEY,
         api_secret: process.env.CLOUDINARY_API_SECRET
     });
-} else {
-    console.warn("⚠️ UYARI: Cloudinary yapılandırması eksik (.env)");
 }
 
 const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 const modelName = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
 const model = genAI ? genAI.getGenerativeModel({ model: modelName }) : null;
 
-// AI'ya gönderilecek verideki gereksiz MongoDB alanlarını temizleyen yardımcı
-function cleanDataForAI(data) {
-    if (Array.isArray(data)) {
-        return data.map(item => cleanDataForAI(item));
-    } else if (data !== null && typeof data === 'object') {
-        const cleaned = {};
-        for (const [key, value] of Object.entries(data)) {
-            if (key === '_id' || key === '__v' || key === 'createdAt' || key === 'updatedAt') continue;
-            cleaned[key] = cleanDataForAI(value);
-        }
-        return cleaned;
-    }
-    return data;
-}
-
-// Fotoğrafı base64 formatına çeviren yardımcı (Gemini için)
-function fileToGenerativePart(path, mimeType) {
-    return {
-        inlineData: {
-            data: Buffer.from(fs.readFileSync(path)).toString("base64"),
-            mimeType
-        },
-    };
-}
-
-async function uploadToCloudinary(filePath) {
-    try {
-        const result = await cloudinary.uploader.upload(filePath, {
-            folder: 'liberum_montessori_sessions'
-        });
-        return result.secure_url;
-    } catch (error) {
-        console.error("Cloudinary upload error:", error);
-        throw new Error("Görsel buluta yüklenemedi.");
-    }
-}
-
-async function analyzeImagesWithGemini(filePaths) {
-    if (!model) throw new Error("GEMINI_API_KEY tanımlanmamış.");
+async function analyzeObservationImage(imagePath, promptType = 'GENERAL_OBSERVATION') {
+    if (!model) throw new Error("Gemini API is not configured.");
     
-    // Yüklenen dosyaları Gemini formatına dönüştür
-    const imageParts = filePaths.map(fp => fileToGenerativePart(fp, 'image/jpeg')); // JPEG/PNG varsayıyoruz
-    
-    const request = [
-        prompts.OBSERVATION_ANALYSIS_PROMPT,
-        ...imageParts
-    ];
-
     try {
-        const result = await model.generateContent(request);
-        const response = await result.response;
-        const text = response.text();
+        const imageData = fs.readFileSync(imagePath);
+        const base64Image = imageData.toString('base64');
+
+        const prompt = prompts[promptType] || prompts.GENERAL_OBSERVATION;
         
-        // Gemini'nin döndürdüğü string içerisindeki JSON'u çıkart (eğer backtick kullanmışsa temizleriz)
-        const cleanedText = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
-        return JSON.parse(cleanedText);
+        const result = await model.generateContent([
+            prompt,
+            {
+                inlineData: {
+                    data: base64Image,
+                    mimeType: "image/jpeg"
+                }
+            }
+        ]);
+
+        const response = await result.response;
+        return response.text();
     } catch (error) {
-        console.error("Gemini analysis error:", error);
-        throw new Error("Yapay Zeka analizi gerçekleştirilemedi.");
+        console.error("Gemini Vision Error:", error);
+        throw error;
     }
 }
 
@@ -88,7 +48,7 @@ async function synthesizeReport(rawData) {
     const request = [
         prompts.PARENT_REPORT_SYNTHESIS_PROMPT,
         "AŞAĞIDA ÖĞRENCİNİN VERİLERİ BULUNMAKTADIR:",
-        JSON.stringify(cleanDataForAI(rawData), null, 2)
+        JSON.stringify(rawData, null, 2)
     ];
 
     try {
@@ -102,7 +62,6 @@ async function synthesizeReport(rawData) {
 }
 
 module.exports = {
-    uploadToCloudinary,
-    analyzeImagesWithGemini,
+    analyzeObservationImage,
     synthesizeReport
 };
