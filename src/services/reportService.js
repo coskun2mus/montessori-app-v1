@@ -61,43 +61,70 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
         observationDate: { $gte: start, $lte: end }
     }).populate('lesson', 'lessonName area difficultyLevel');
 
+    // İstatistik hesabı için tüm zamanlardaki gözlemler (uygulama paneli ile aynı mantık)
+    const allObservations = await Observation.find({
+        student: studentId
+    }).populate('lesson', 'lessonName area difficultyLevel');
+
     const staffNotes = await StaffNote.find({
         student: studentId,
         date: { $gte: start, $lte: end }
     });
 
-    // ── Her materyal için tek gözlem: en yüksek statüyü al ──
-    // (Uygulama paneli ile tutarlı olması için)
     const STATUS_RANK = { 'Sunuldu': 1, 'Yönlendirme': 2, 'Hata Kontrolü': 3, 'Ustalaştı': 4 };
-    const lessonBest = {};
-    for (const obs of observations) {
-        if (!obs.lesson) continue;
+
+    // Yalnızca geçerli skoru olan gözlemleri filtrele (uygulama ile aynı)
+    const validPeriod = observations.filter(o => o.lesson && typeof o.lesson === 'object' && o.successScore !== null);
+    const validAll = allObservations.filter(o => o.lesson && typeof o.lesson === 'object' && o.successScore !== null);
+
+    // Dönem içi materyaller (liste için) — date-filtered
+    const lessonBestPeriod = {};
+    for (const obs of validPeriod) {
         const lid = obs.lesson._id.toString();
-        if (!lessonBest[lid]) { lessonBest[lid] = obs; continue; }
+        if (!lessonBestPeriod[lid]) { lessonBestPeriod[lid] = obs; continue; }
         const cur  = STATUS_RANK[obs.status] ?? 0;
-        const best = STATUS_RANK[lessonBest[lid].status] ?? 0;
-        if (cur > best || (cur === best && (obs.successScore || 0) > (lessonBest[lid].successScore || 0))) {
-            lessonBest[lid] = obs;
+        const best = STATUS_RANK[lessonBestPeriod[lid].status] ?? 0;
+        if (cur > best || (cur === best && obs.successScore > lessonBestPeriod[lid].successScore)) {
+            lessonBestPeriod[lid] = obs;
         }
     }
-    const deduped = Object.values(lessonBest);
+    const deduped = Object.values(lessonBestPeriod);
 
-    // ── 1. ALAN BAZLI BAŞARI ANALİZİ ──
+    // Tüm zamanlardaki gözlemler (istatistik için) — no date filter, sadece dönem derslerini filtrele
+    const periodLessonIds = new Set(deduped.map(o => o.lesson._id.toString()));
+    const lessonBestAll = {};
+    for (const obs of validAll) {
+        const lid = obs.lesson._id.toString();
+        if (!periodLessonIds.has(lid)) continue; // Sadece dönemde görülen dersler
+        if (!lessonBestAll[lid]) { lessonBestAll[lid] = obs; continue; }
+        const cur  = STATUS_RANK[obs.status] ?? 0;
+        const best = STATUS_RANK[lessonBestAll[lid].status] ?? 0;
+        if (cur > best || (cur === best && obs.successScore > lessonBestAll[lid].successScore)) {
+            lessonBestAll[lid] = obs;
+        }
+    }
+    const dedupedAll = Object.values(lessonBestAll);
+
+    // ── 1. ALAN BAZLI BAŞARI ANALİZİ (tüm zaman skoru, uygulama ile aynı) ──
     const areaStats = {};
-    deduped.forEach(o => {
-        if (!o.lesson) return;
+    dedupedAll.forEach(o => {
         const area = o.lesson.area || 'Diğer';
         if (!areaStats[area]) areaStats[area] = { totalScore: 0, totalMax: 0, count: 0 };
-        areaStats[area].totalScore += (o.successScore || 0);
+        areaStats[area].totalScore += o.successScore;
         areaStats[area].totalMax += (o.lesson.difficultyLevel || 5);
         areaStats[area].count++;
     });
 
-    const areaSummaries = Object.entries(areaStats).map(([area, stats]) => ({
-        area,
-        ratio: stats.totalMax > 0 ? (stats.totalScore / stats.totalMax) : 0,
-        count: stats.count
-    })).sort((a, b) => b.ratio - a.ratio);
+    const areaSummaries = Object.entries(areaStats).map(([area, d]) => {
+        const avgScore = parseFloat((d.totalScore / d.count).toFixed(2));
+        const maxAvgScore = parseFloat((d.totalMax / d.count).toFixed(2));
+        const ratio = maxAvgScore > 0 ? parseFloat((avgScore / maxAvgScore).toFixed(4)) : 0;
+        return {
+            area,
+            ratio,
+            count: d.count
+        };
+    }).sort((a, b) => b.ratio - a.ratio);
 
     // ── 2. MATERYALLER (ALAN BAZINDA GRUPLANDİRİLMİŞ) ──
     const obsByArea = {};
