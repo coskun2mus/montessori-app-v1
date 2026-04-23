@@ -1,6 +1,10 @@
-node_modules
-npm-debug.log
+node_modules/
+.env
 .git
 .gitignore
 Dockerfile
 .dockerignore
+scripts/test_ai_synthesis.js
+çıktılar/
+uploads/
+ et_research_files/

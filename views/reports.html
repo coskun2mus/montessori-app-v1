@@ -147,7 +147,7 @@ async function loadReport(studentId) {
 
         body.innerHTML = `
             <!-- ÖZET SAYAÇLAR -->
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-3 animate-up delay-1">
                 <div class="col-4">
                     <div class="stat-card">
                         <div class="stat-num">${data.totalMaterials}</div>
@@ -169,8 +169,8 @@ async function loadReport(studentId) {
             </div>
 
             <!-- AĞIRLIKLI BAŞARI ORANI -->
-            <div class="global-ring-wrap mb-3">
-                <div class="global-ring ring-${tier}">
+            <div class="global-ring-wrap mb-3 animate-up delay-2">
+                <div class="global-ring ring-${tier} animate-scale">
                     %${wsrPct}
                     <small>Başarı</small>
                 </div>
@@ -187,16 +187,16 @@ async function loadReport(studentId) {
             </div>
 
             <!-- CHART.JS — ALAN BAZLI BAR CHART -->
-            <div class="chart-card mb-3">
+            <div class="chart-card mb-3 animate-up delay-3">
                 <h6><i class="fas fa-chart-bar me-1"></i>Alan Bazı Başarı Oranı</h6>
                 <canvas id="areaChart" height="220"></canvas>
             </div>
 
             <!-- GENİŞLETİLEBİLİR ALAN KARTLARI -->
-            <div class="fw-bold text-muted mb-2" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px;">
+            <div class="fw-bold text-muted mb-2 animate-fade delay-4" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px;">
                 <i class="fas fa-list me-1"></i>Materyal Detayları
             </div>
-            <div id="areaCards" class="d-flex flex-column gap-3"></div>`;
+            <div id="areaCards" class="d-flex flex-column gap-3 animate-up delay-5"></div>`;
 
         // ── CHART.JS RENDER (Başarı Oranı Bazlı Dinamik Renkler) ──────────
         const labels   = data.summary.map(a => `${AREA_META[a.area]?.icon || ''} ${a.area}`);

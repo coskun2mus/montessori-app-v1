@@ -1,4 +1,7 @@
 node_modules/
 .env
 uploads/
+çıktılar/
+scripts/test_ai_synthesis.js
 et_research_files/
+*.pdf

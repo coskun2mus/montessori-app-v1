@@ -17,7 +17,23 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
 }
 
 const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-3-flash-preview" }) : null;
+const modelName = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
+const model = genAI ? genAI.getGenerativeModel({ model: modelName }) : null;
+
+// AI'ya gönderilecek verideki gereksiz MongoDB alanlarını temizleyen yardımcı
+function cleanDataForAI(data) {
+    if (Array.isArray(data)) {
+        return data.map(item => cleanDataForAI(item));
+    } else if (data !== null && typeof data === 'object') {
+        const cleaned = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (key === '_id' || key === '__v' || key === 'createdAt' || key === 'updatedAt') continue;
+            cleaned[key] = cleanDataForAI(value);
+        }
+        return cleaned;
+    }
+    return data;
+}
 
 // Fotoğrafı base64 formatına çeviren yardımcı (Gemini için)
 function fileToGenerativePart(path, mimeType) {
@@ -72,7 +88,7 @@ async function synthesizeReport(rawData) {
     const request = [
         prompts.PARENT_REPORT_SYNTHESIS_PROMPT,
         "AŞAĞIDA ÖĞRENCİNİN VERİLERİ BULUNMAKTADIR:",
-        JSON.stringify(rawData, null, 2)
+        JSON.stringify(cleanDataForAI(rawData), null, 2)
     ];
 
     try {

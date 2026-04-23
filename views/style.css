@@ -42,7 +42,43 @@
     /* Geçişler */
     --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* Premium Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
+
+/* ─── ANİMASYONLAR ──────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.animate-up { animation: fadeInUp 0.6s var(--ease-out) both; }
+.animate-fade { animation: fadeIn 0.4s var(--ease-out) both; }
+.animate-scale { animation: scaleIn 0.5s var(--ease-spring) both; }
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
 
 /* ─── TEMEL TİPOGRAFİ ──────────────────────────────────────────────────── */
 body {
@@ -210,10 +246,10 @@ body.modal-open .selection-container { z-index: 1 !important; }
 .student-card:hover {
     border-left-color: var(--lib-champagne);
     box-shadow: var(--shadow-lifted);
-    transform: translateY(-2px);
+    transform: translateY(-4px) scale(1.02);
 }
-.student-card:hover::before { opacity: 0.08; }
-.student-card:active { transform: translateY(0); }
+.student-card:hover::before { opacity: 0.12; }
+.student-card:active { transform: translateY(-1px) scale(1); }
 
 .avatar {
     width: 48px;
@@ -474,18 +510,23 @@ label.small, .form-text {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--lib-ivory);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    width: 88%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    width: 90%;
     max-width: 420px;
     padding: 10px 8px;
-    border-radius: var(--radius-sm);
+    border-radius: 20px;
     display: flex;
     justify-content: space-around;
-    box-shadow: var(--shadow-float);
+    box-shadow: var(--glass-shadow);
     z-index: 1010;
-    border: 1px solid var(--lib-line);
+    border: 1px solid var(--glass-border);
+    transition: all 0.3s var(--ease-out);
+}
+.bottom-nav:hover {
+    transform: translateX(-50%) translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
 }
 
 .nav-item {

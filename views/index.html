@@ -133,11 +133,12 @@ async function loadStudents(classId) {
     try {
         const response = await fetch(`/api/students/${classId}`);
         const students = await response.json();
-        container.innerHTML = students.map(s => {
+        container.innerHTML = students.map((s, idx) => {
             const initials = (s.firstName[0] || '') + (s.lastName[0] || '');
             const entryDate = s.enrollmentDate ? new Date(s.enrollmentDate).toLocaleDateString('tr-TR') : '-';
+            const delayClass = idx < 6 ? `delay-${(idx % 5) + 1}` : '';
             return `
-                <div class="col">
+                <div class="col animate-up ${delayClass}">
                     <div class="student-card p-3 d-flex align-items-center" onclick="openObservation('${s._id}', '${s.firstName} ${s.lastName}')">
                         <div class="avatar shadow-sm me-3">${initials}</div>
                         <div class="flex-grow-1">

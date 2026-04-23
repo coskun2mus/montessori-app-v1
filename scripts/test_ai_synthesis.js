@@ -17,16 +17,25 @@ async function runTest() {
         process.exit(1);
     }
 
-    // 2. Mock Veri Hazırlığı
+    // 2. Mock Veri Hazırlığı (Zenginleştirilmiş Yapı)
     const mockData = {
-        student: "Test Öğrencisi",
+        student: {
+            name: "Test Öğrencisi",
+            age: "42 aylık",
+            enrollmentDate: "2025-09-01"
+        },
         period: "20.04.2026 - 20.05.2026",
+        areaSummaries: [
+            { area: "Duyusal", ratio: 0.9, count: 5 },
+            { area: "Matematik", ratio: 0.65, count: 3 }
+        ],
         pedagogicalNotes: [
-            { lesson: "Pembe Kule", status: "Ustalaştı", teacherNote: "Dengeli bir çalışma sergiledi." },
-            { lesson: "Silindir Bloklar", status: "Yönlendirme", teacherNote: "Odaklanma artırılmalı." }
+            { lesson: "Pembe Kule", area: "Duyusal", status: "Ustalaştı", score: 9.5, maxScore: 10, teacherNote: "Dengeli bir çalışma sergiledi. Boyut farklarını hatasız kavrıyor." },
+            { lesson: "Silindir Bloklar", area: "Duyusal", status: "Hata Kontrolü", score: 7.0, maxScore: 10, teacherNote: "Görsel ayrıştırmada gelişme var." },
+            { lesson: "Sayı Çubukları", area: "Matematik", status: "Yönlendirme", score: 6.0, maxScore: 10, teacherNote: "Miktar kavramına giriş yapıldı." }
         ],
         staffNotes: [
-            { author: "Ahmet Bey (Servis)", note: "Bugün serviste çok sakindi." }
+            { author: "Ahmet Bey (Servis)", note: "Bugün serviste çok sakindi, arkadaşlarına yardım etti." }
         ]
     };
 
@@ -44,10 +53,10 @@ async function runTest() {
         console.log(result);
         console.log("--------------------------------------------------");
         
-        // Türkçe karakter kontrolü (PDF güvenliği için)
+        // Türkçe karakter kontrolü
         const trChars = /[ğĞüÜşŞıİöÖçÇ]/;
         if (trChars.test(result)) {
-            console.log("⚠️ NOT: Çıktıda Türkçe karakterler mevcut. PDF motorunda trToEn() kullanıldığından emin olun.");
+            console.log("✨ NOT: Çıktıda Türkçe karakterler mevcut. Roboto fontu sayesinde PDF'de kusursuz görünecek.");
         }
 
     } catch (error) {
