@@ -5,22 +5,11 @@ const StaffNote = require('../models/StaffNote');
 const Student = require('../models/Student');
 const path = require('path');
 
-const FONT_REGULAR = path.join(__dirname, '../../public/fonts/Roboto-Regular.ttf');
-const FONT_BOLD = path.join(__dirname, '../../public/fonts/Roboto-Bold.ttf');
-
-// PDFKit standart fontlarında WinAnsiEncoding hatasını önlemek için karakter dönüştürücü
-function trToEn(text) {
-    if (!text) return "";
-    return text.toString()
-        .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
-        .replace(/ü/g, 'u').replace(/Ü/g, 'U')
-        .replace(/ş/g, 's').replace(/Ş/g, 'S')
-        .replace(/ı/g, 'i').replace(/İ/g, 'I')
-        .replace(/ö/g, 'o').replace(/Ö/g, 'O')
-        .replace(/ç/g, 'c').replace(/Ç/g, 'C');
-}
+const FONT_REGULAR_PATH = path.join(__dirname, '../../public/fonts/Roboto-Regular.ttf');
+const FONT_BOLD_PATH = path.join(__dirname, '../../public/fonts/Roboto-Bold.ttf');
 
 async function downloadImage(url) {
+    if (!url) return null;
     try {
         const res = await fetch(url);
         if (!res.ok) throw new Error("Resim indirilemedi.");
@@ -143,12 +132,21 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
 
     // ── 4. PDFKIT REPORT GENERATION ──
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    
+    // Akış kesilirse işlemi durdurmak için kontrol
+    if (resStream.writableEnded) return;
     doc.pipe(resStream);
 
-    // Fontları tanımla (Türkçe karakter desteği için - sistem fontları kullanılabilir 
-    // ama PDFKit dahili Helvetica tr desteklemez, o yüzden dışarıdan ttf veya default destekli basit)
-    // Şimdilik Helvetica. tr karakterlerde sorun yaşamamak için encode gerekir ama basic usage.
-    // Daha temiz kod için Roboto fontu indirilebilir, ancak şimdilik standart kullanım:
+    // Font Kaydı
+    doc.registerFont('Roboto-Regular', FONT_REGULAR_PATH);
+    doc.registerFont('Roboto-Bold', FONT_BOLD_PATH);
+    const FONT_REGULAR = 'Roboto-Regular';
+    const FONT_BOLD = 'Roboto-Bold';
+
+    // PDFKit Hata Yakalayıcı
+    doc.on('error', (err) => {
+        console.error("PDFKit Stream Error:", err);
+    });
     
     // Header
     doc.font(FONT_BOLD).fontSize(26).fillColor('#2D6B4F').text('Liberum Montessori', { align: 'center' });
@@ -162,7 +160,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     // AI Sentez Değerlendirmesi (Structured Rendering)
     const sections = synthesisText.split(/###\s+/);
     sections.forEach(section => {
-        if (!section.trim()) return;
+        if (!section.trim() || resStream.writableEnded) return;
         const lines = section.split('\n');
         const title = lines[0].replace(/[#*]/g, '').trim();
         const content = lines.slice(1).join('\n').trim();
@@ -171,6 +169,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
             doc.font(FONT_BOLD).fontSize(13).fillColor('#2D6B4F').text(title);
             doc.moveDown(0.3);
         }
+        if (resStream.writableEnded) return;
         doc.font(FONT_REGULAR).fontSize(10).fillColor('#333333').text(content, {
             align: 'justify',
             lineGap: 3
@@ -251,10 +250,11 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
 
         let yPos = doc.y;
         for (let i = 0; i < selectedPhotos.length; i++) {
+            if (resStream.writableEnded) break;
             const photo = selectedPhotos[i];
             const buffer = await downloadImage(photo.url);
             
-            if (buffer) {
+            if (buffer && !resStream.writableEnded) {
                 // Her sayfaya 2 resim sığacak şekilde
                 if (i > 0 && i % 2 === 0) {
                     doc.addPage();
