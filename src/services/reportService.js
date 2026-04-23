@@ -66,9 +66,25 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
         date: { $gte: start, $lte: end }
     });
 
+    // ── Her materyal için tek gözlem: en yüksek statüyü al ──
+    // (Uygulama paneli ile tutarlı olması için)
+    const STATUS_RANK = { 'Sunuldu': 1, 'Yönlendirme': 2, 'Hata Kontrolü': 3, 'Ustalaştı': 4 };
+    const lessonBest = {};
+    for (const obs of observations) {
+        if (!obs.lesson) continue;
+        const lid = obs.lesson._id.toString();
+        if (!lessonBest[lid]) { lessonBest[lid] = obs; continue; }
+        const cur  = STATUS_RANK[obs.status] ?? 0;
+        const best = STATUS_RANK[lessonBest[lid].status] ?? 0;
+        if (cur > best || (cur === best && (obs.successScore || 0) > (lessonBest[lid].successScore || 0))) {
+            lessonBest[lid] = obs;
+        }
+    }
+    const deduped = Object.values(lessonBest);
+
     // ── 1. ALAN BAZLI BAŞARI ANALİZİ ──
     const areaStats = {};
-    observations.forEach(o => {
+    deduped.forEach(o => {
         if (!o.lesson) return;
         const area = o.lesson.area || 'Diğer';
         if (!areaStats[area]) areaStats[area] = { totalScore: 0, totalMax: 0, count: 0 };
@@ -85,7 +101,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
 
     // ── 2. MATERYALLER (ALAN BAZINDA GRUPLANDİRİLMİŞ) ──
     const obsByArea = {};
-    observations.forEach(o => {
+    deduped.forEach(o => {
         if (!o.lesson) return;
         const a = o.lesson.area || 'Diğer';
         if (!obsByArea[a]) obsByArea[a] = [];
@@ -135,7 +151,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     // ── 4. AI SENTEZİ ──
     let synthesisText = "";
     try {
-        if (observations.length > 0 || staffNotes.length > 0) {
+        if (deduped.length > 0 || staffNotes.length > 0) {
             const rawDataForAI = {
                 student: {
                     name: `${student.firstName} ${student.lastName}`,
@@ -144,7 +160,7 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
                 },
                 period: `${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')}`,
                 areaSummaries,
-                pedagogicalNotes: observations.map(o => ({
+                pedagogicalNotes: deduped.map(o => ({
                     lesson: o.lesson?.lessonName,
                     area: o.lesson?.area,
                     status: o.status,
