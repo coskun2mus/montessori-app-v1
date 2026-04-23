@@ -4,6 +4,7 @@ const Observation = require('../models/Observation');
 const StaffNote = require('../models/StaffNote');
 const Student = require('../models/Student');
 const path = require('path');
+const fs = require('fs');
 
 const FONT_REGULAR_PATH = path.join(__dirname, '../../public/fonts/Roboto-Regular.ttf');
 const FONT_BOLD_PATH = path.join(__dirname, '../../public/fonts/Roboto-Bold.ttf');
@@ -133,20 +134,36 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     // ── 4. PDFKIT REPORT GENERATION ──
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
     
-    // Akış kesilirse işlemi durdurmak için kontrol
     if (resStream.writableEnded) return;
-    doc.pipe(resStream);
+    
+    // Akış (Response) hatasını yakala - Çökmeyi önlemek için kritik!
+    resStream.on('error', (err) => {
+        console.error("Response Stream Error:", err);
+    });
 
-    // Font Kaydı
-    doc.registerFont('Roboto-Regular', FONT_REGULAR_PATH);
-    doc.registerFont('Roboto-Bold', FONT_BOLD_PATH);
-    const FONT_REGULAR = 'Roboto-Regular';
-    const FONT_BOLD = 'Roboto-Bold';
+    doc.pipe(resStream);
 
     // PDFKit Hata Yakalayıcı
     doc.on('error', (err) => {
-        console.error("PDFKit Stream Error:", err);
+        console.error("PDFKit Document Error:", err);
     });
+
+    // Font Kaydı ve Fallback Mekanizması
+    let FONT_REGULAR = 'Helvetica';
+    let FONT_BOLD = 'Helvetica-Bold';
+
+    try {
+        if (fs.existsSync(FONT_REGULAR_PATH) && fs.existsSync(FONT_BOLD_PATH)) {
+            doc.registerFont('Roboto-Regular', FONT_REGULAR_PATH);
+            doc.registerFont('Roboto-Bold', FONT_BOLD_PATH);
+            FONT_REGULAR = 'Roboto-Regular';
+            FONT_BOLD = 'Roboto-Bold';
+        } else {
+            console.warn("⚠️ Roboto fontları bulunamadı, Helvetica ile devam ediliyor.");
+        }
+    } catch (fontErr) {
+        console.error("Font registration failed:", fontErr);
+    }
     
     // Header
     doc.font(FONT_BOLD).fontSize(26).fillColor('#2D6B4F').text('Liberum Montessori', { align: 'center' });
