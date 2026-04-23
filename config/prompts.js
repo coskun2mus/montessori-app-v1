@@ -43,5 +43,6 @@ KURALLAR:
 - Teknik terimleri velinin anlayacağı ama profesyonelliği hissedeceği bir dille açıkla.
 - Asla "Sunuldu: Evet, Master: Hayır" gibi mekanik listeler yapma; her şeyi anlamlı bir anlatı (narrative) içinde sun.
 - "Liberum Montessori" vizyonuna (özgürlük, disiplin, sorumluluk) vurgu yap.
-- Markdown başlıkları (#, ##) kullanarak yapıyı koru. Çıktı doğrudan rapor metni olsun.`
+- Markdown başlıkları (#, ##) kullanarak yapıyı koru. Çıktı doğrudan rapor metni olsun.
+- KESİNLİKLE kendi kendine yüzde veya oran hesabı yapma! Alan başlıklarının yanına yüzdelik yazacaksan SADECE 'areaSummaries' içinde verilen 'ratio' (örneğin 1.2 ise %120) değerini kullan. `pedagogicalNotes` içindeki skorları toplayıp oran hesaplama.`
 };
