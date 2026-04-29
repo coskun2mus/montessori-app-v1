@@ -442,6 +442,8 @@ app.get('/api/observations/:id/detail', async (req, res) => {
     }
 });
 
+const { trToEn } = require('./utils/stringUtils');
+
 // Veli Raporu Ouluşturma (PDF)
 app.get('/api/reports/student/:studentId/pdf', async (req, res) => {
     const { start, end } = req.query;
@@ -450,8 +452,11 @@ app.get('/api/reports/student/:studentId/pdf', async (req, res) => {
     }
     
     try {
+        const student = await Student.findById(req.params.studentId);
+        const fileName = trToEn(`Liberum_Gelisim_Raporu_${student ? student.firstName + '_' + student.lastName : req.params.studentId}.pdf`);
+
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="Liberum_Gelisim_Raporu_${req.params.studentId}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
         
         await reportService.generateParentReport(res, req.params.studentId, start, end);
         

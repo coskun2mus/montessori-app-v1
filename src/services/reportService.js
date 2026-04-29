@@ -59,12 +59,16 @@ async function generateParentReport(resStream, studentId, startDate, endDate) {
     const observations = await Observation.find({
         student: studentId,
         observationDate: { $gte: start, $lte: end }
-    }).populate('lesson', 'lessonName area difficultyLevel');
+    })
+    .populate('lesson', 'lessonName area difficultyLevel expectedTimeAtMinAge minAge alfa')
+    .populate('student', 'birthDate enrollmentDate');
 
     // İstatistik hesabı için tüm zamanlardaki gözlemler (uygulama paneli ile aynı mantık)
     const allObservations = await Observation.find({
         student: studentId
-    }).populate('lesson', 'lessonName area difficultyLevel');
+    })
+    .populate('lesson', 'lessonName area difficultyLevel expectedTimeAtMinAge minAge alfa')
+    .populate('student', 'birthDate enrollmentDate');
 
     const staffNotes = await StaffNote.find({
         student: studentId,
